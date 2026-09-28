@@ -734,7 +734,7 @@ function markRead(id) {
     }
 }
 
-onMessage(messaging, (payload) => {
+messaging.onMessage(messaging, (payload) => {
     console.log("Message reçu au premier plan :", payload);
 });
 
