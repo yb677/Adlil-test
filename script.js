@@ -755,21 +755,21 @@ async function testFCM() {
 
         console.log("AVANT FETCH");
 
-const response = await fetch(
-    'https://westminster-boats-realistic-simulations.trycloudflare.com/register',
-    {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            clientId: CLIENT_ID,
-            token: token
-        })
-    }
-);
+        const response = await fetch(
+        'https://bind-regular-football-local.trycloudflare.com/register',
+        {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                clientId: CLIENT_ID,
+                token: token
+             })
+        }
+        );
 
-console.log("APRES FETCH", response.status);
+        console.log("APRES FETCH", response.status);
 
-/*
+    /*
         const response = await fetch(
             'https://westminster-boats-realistic-simulations.trycloudflare.com/register',
             {
@@ -783,7 +783,7 @@ console.log("APRES FETCH", response.status);
                 })
             }
         );
-*/
+    */
         const result = await response.json();
         console.log('✅ Enregistrement serveur :', result);
 
