@@ -756,7 +756,8 @@ async function testFCM() {
         console.log("AVANT FETCH");
 
         const response = await fetch(
-        'https://bind-regular-football-local.trycloudflare.com/register',
+        //'https://bind-regular-football-local.trycloudflare.com/register',
+        'https://matters-clock-ozone-brunette.trycloudflare.com/register',
         {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
