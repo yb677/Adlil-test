@@ -734,6 +734,10 @@ function markRead(id) {
     }
 }
 
+onMessage(messaging, (payload) => {
+    console.log("Message reçu au premier plan :", payload);
+});
+
 async function testFCM() {
     try {
         const permission = await Notification.requestPermission();
