@@ -757,7 +757,8 @@ async function testFCM() {
 
         const response = await fetch(
         //'https://bind-regular-football-local.trycloudflare.com/register',
-        'https://matters-clock-ozone-brunette.trycloudflare.com/register',
+        //'https://matters-clock-ozone-brunette.trycloudflare.com/register',
+        'https://api.adlil.net/register'
         {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
