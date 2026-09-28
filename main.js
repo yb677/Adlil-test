@@ -42,3 +42,5 @@ form.addEventListener('submit', (e) => {
   welcomeMsg.innerText = `Bienvenue, ${name}`; // Met à jour l'accueil aussi
   form.reset();
 });
+
+

@@ -1,7 +1,18 @@
 // ─── VERSION ────────────────────────────────────────────────────────────────
 // Changez uniquement ce numéro à chaque déploiement.
 // Le navigateur détectera la différence et déclenchera la mise à jour.
-const CACHE_VERSION = 12;
+importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
+firebase.initializeApp({
+    apiKey: "AIzaSyCOC38yLL-m9Zzd1k8fkjkrrinsX7ZEokg",
+    authDomain: "adlil-fb5df.firebaseapp.com",
+    projectId: "adlil-fb5df",
+    storageBucket: "adlil-fb5df.firebasestorage.app",
+    messagingSenderId: "178895455937",
+    appId: "1:178895455937:web:90d03218b3f78e0d67f640"
+});
+const messaging = firebase.messaging();
+const CACHE_VERSION = 18;
 const CACHE_NAME = `mon-app-v${CACHE_VERSION}`;
 
 // ─── FICHIERS À METTRE EN CACHE ─────────────────────────────────────────────
@@ -78,5 +89,17 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(
         caches.match(e.request)
             .then(cached => cached || fetch(e.request))
+    );
+});
+
+messaging.onBackgroundMessage((payload) => {
+    console.log("Message reçu en arrière-plan :", payload);
+
+    self.registration.showNotification(
+        payload.notification?.title || "ADLIL",
+        {
+            body: payload.notification?.body || "",
+            icon: './icon-192.png'
+        }
     );
 });
