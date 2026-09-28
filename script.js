@@ -19,6 +19,24 @@ const DB_VERSION = 1;
 const STORE_NAME = 'publications';
 let idb;
 
+// ============================================================
+// CLIENT ID
+// ============================================================
+function getClientId() {
+    let clientId = localStorage.getItem('adlil_client_id');
+
+    if (!clientId) {
+        clientId = crypto.randomUUID();
+        localStorage.setItem('adlil_client_id', clientId);
+    }
+
+    return clientId;
+}
+
+const CLIENT_ID = getClientId();
+
+console.log('🆔 Client ID :', CLIENT_ID);
+
 function openIDB() {
     return new Promise((resolve, reject) => {
         const req = indexedDB.open(DB_NAME, DB_VERSION);
