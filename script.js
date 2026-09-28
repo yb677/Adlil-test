@@ -753,6 +753,23 @@ async function testFCM() {
 
         console.log('✅ TOKEN FCM :', token);
 
+        console.log("AVANT FETCH");
+
+const response = await fetch(
+    'https://westminster-boats-realistic-simulations.trycloudflare.com/register',
+    {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            clientId: CLIENT_ID,
+            token: token
+        })
+    }
+);
+
+console.log("APRES FETCH", response.status);
+
+/*
         const response = await fetch(
             'https://westminster-boats-realistic-simulations.trycloudflare.com/register',
             {
@@ -766,7 +783,7 @@ async function testFCM() {
                 })
             }
         );
-
+*/
         const result = await response.json();
         console.log('✅ Enregistrement serveur :', result);
 
