@@ -735,11 +735,8 @@ function markRead(id) {
 }
 
 async function testFCM() {
-        //alert("1 - testFCM démarre ...");
-
     try {
         const permission = await Notification.requestPermission();
-        //alert("2 - permission = " + permission);
 
         if (permission !== 'granted') {
             console.log('❌ Notifications refusées');
@@ -747,18 +744,34 @@ async function testFCM() {
         }
 
         const registration = await navigator.serviceWorker.ready;
-        //alert("3 - service worker OK");
 
         const token = await messaging.getToken({
             vapidKey: 'BPjhdG-Dm7svZ-boXobNX1cxRtDae-2WruRMynUsLCEf3qJ-RbF91BUSVhHhtPxBew7NHASQgdv4CD1-a7ROcM0',
+
             serviceWorkerRegistration: registration
         });
 
         console.log('✅ TOKEN FCM :', token);
-        //alert("4 - TOKEN FCM :\n\n" + token);
+
+        const response = await fetch(
+            'https://westminster-boats-realistic-simulations.trycloudflare.com/register',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    clientId: CLIENT_ID,
+                    token: token
+                })
+            }
+        );
+
+        const result = await response.json();
+        console.log('✅ Enregistrement serveur :', result);
+
     } catch (err) {
-        //console.error('❌ Erreur FCM :', err);
-        //alert("ERREUR FCM :\n\n" + err);
+        console.error('❌ Erreur FCM :', err);
     }
 }
 
