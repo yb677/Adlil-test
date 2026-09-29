@@ -736,6 +736,14 @@ function markRead(id) {
 
 messaging.onMessage((payload) => {
     console.log("Message reçu au premier plan :", payload);
+
+    new Notification(
+        payload.notification?.title || "ADLIL",
+        {
+            body: payload.notification?.body || "",
+            icon: "./icon-192.png"
+        }
+    );
 });
 
 async function testFCM() {
