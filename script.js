@@ -843,7 +843,7 @@ loadDevImages();
 
 async function loadDevPublications() {
     try {
-        const response = await fetch('http://localhost:3001/dev/images');
+        const response = await fetch(`${DEV_SERVER}/dev/images`)
         const data = await response.json();
 
         console.log('📚 Publications DEV :', data);
