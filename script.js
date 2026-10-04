@@ -734,6 +734,18 @@ function markRead(id) {
     }
 }
 
+messaging.onMessage((payload) => {
+    console.log("Message reçu au premier plan :", payload);
+
+    new Notification(
+        payload.notification?.title || "ADLIL",
+        {
+            body: payload.notification?.body || "",
+            icon: "./icon-192.png"
+        }
+    );
+});
+
 async function testFCM() {
     try {
         const permission = await Notification.requestPermission();
@@ -755,21 +767,23 @@ async function testFCM() {
 
         console.log("AVANT FETCH");
 
-const response = await fetch(
-    'https://westminster-boats-realistic-simulations.trycloudflare.com/register',
-    {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            clientId: CLIENT_ID,
-            token: token
-        })
-    }
-);
+        const response = await fetch(
+        //'https://bind-regular-football-local.trycloudflare.com/register',
+        //'https://matters-clock-ozone-brunette.trycloudflare.com/register',
+        'https://api.adlil.net/register',
+        {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                clientId: CLIENT_ID,
+                token: token
+             })
+        }
+        );
 
-console.log("APRES FETCH", response.status);
+        console.log("APRES FETCH", response.status);
 
-/*
+    /*
         const response = await fetch(
             'https://westminster-boats-realistic-simulations.trycloudflare.com/register',
             {
@@ -783,7 +797,7 @@ console.log("APRES FETCH", response.status);
                 })
             }
         );
-*/
+    */
         const result = await response.json();
         console.log('✅ Enregistrement serveur :', result);
 
@@ -794,3 +808,31 @@ console.log("APRES FETCH", response.status);
 
 testFCM();
 //alert("VERSION TEST FCM : 14");
+
+// ============================================================
+// TEST IMAGES DEV
+// ============================================================
+
+const DEV_SERVER = 'http://localhost:3001';
+
+async function loadDevImages() {
+    try {
+        const response = await fetch(`${DEV_SERVER}/dev/images`);
+        const data = await response.json();
+
+        console.log('🖼️ Images DEV :', data);
+
+        if (data.success) {
+            data.images.forEach(image => {
+                console.log(
+                    'Image :',
+                    `${DEV_SERVER}/dev/images/${image.filename}`
+                );
+            });
+        }
+    } catch (err) {
+        console.error('❌ Serveur DEV inaccessible :', err);
+    }
+}
+
+loadDevImages();
