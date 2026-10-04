@@ -106,7 +106,7 @@ function showMainApp() {
     document.getElementById('success-screen').style.display = 'none';
     document.getElementById('mainApp').style.display = 'block';
     document.getElementById('burgerBtn').style.display = 'flex';
-    iosArrow.style.display = 'none'; 
+    iosArrow.style.display = 'none';
 }
 
 // --- INSTALLATION ---
@@ -172,10 +172,10 @@ function md5(input) {
     function safeAdd(x, y) { const lsw = (x & 0xffff) + (y & 0xffff); return ((x >> 16) + (y >> 16) + (lsw >> 16)) << 16 | lsw & 0xffff; }
     function bitRotateLeft(num, cnt) { return num << cnt | num >>> (32 - cnt); }
     function md5cmn(q, a, b, x, s, t) { return safeAdd(bitRotateLeft(safeAdd(safeAdd(a, q), safeAdd(x, t)), s), b); }
-    function md5ff(a,b,c,d,x,s,t){return md5cmn(b&c|~b&d,a,b,x,s,t);}
-    function md5gg(a,b,c,d,x,s,t){return md5cmn(b&d|c&~d,a,b,x,s,t);}
-    function md5hh(a,b,c,d,x,s,t){return md5cmn(b^c^d,a,b,x,s,t);}
-    function md5ii(a,b,c,d,x,s,t){return md5cmn(c^(b|~d),a,b,x,s,t);}
+    function md5ff(a, b, c, d, x, s, t) { return md5cmn(b & c | ~b & d, a, b, x, s, t); }
+    function md5gg(a, b, c, d, x, s, t) { return md5cmn(b & d | c & ~d, a, b, x, s, t); }
+    function md5hh(a, b, c, d, x, s, t) { return md5cmn(b ^ c ^ d, a, b, x, s, t); }
+    function md5ii(a, b, c, d, x, s, t) { return md5cmn(c ^ (b | ~d), a, b, x, s, t); }
     function utf8Encode(str) {
         return unescape(encodeURIComponent(str));
     }
@@ -195,28 +195,28 @@ function md5(input) {
     function coreMD5(x, len) {
         x[len >> 5] |= 0x80 << len % 32;
         x[(len + 64 >>> 9 << 4) + 14] = len;
-        let a=1732584193,b=-271733879,c=-1732584194,d=271733878;
+        let a = 1732584193, b = -271733879, c = -1732584194, d = 271733878;
         for (let i = 0; i < x.length; i += 16) {
-            const [oa,ob,oc,od]=[a,b,c,d];
-            a=md5ff(a,b,c,d,x[i+0],7,-680876936);d=md5ff(d,a,b,c,x[i+1],12,-389564586);c=md5ff(c,d,a,b,x[i+2],17,606105819);b=md5ff(b,c,d,a,x[i+3],22,-1044525330);
-            a=md5ff(a,b,c,d,x[i+4],7,-176418897);d=md5ff(d,a,b,c,x[i+5],12,1200080426);c=md5ff(c,d,a,b,x[i+6],17,-1473231341);b=md5ff(b,c,d,a,x[i+7],22,-45705983);
-            a=md5ff(a,b,c,d,x[i+8],7,1770035416);d=md5ff(d,a,b,c,x[i+9],12,-1958414417);c=md5ff(c,d,a,b,x[i+10],17,-42063);b=md5ff(b,c,d,a,x[i+11],22,-1990404162);
-            a=md5ff(a,b,c,d,x[i+12],7,1804603682);d=md5ff(d,a,b,c,x[i+13],12,-40341101);c=md5ff(c,d,a,b,x[i+14],17,-1502002290);b=md5ff(b,c,d,a,x[i+15],22,1236535329);
-            a=md5gg(a,b,c,d,x[i+1],5,-165796510);d=md5gg(d,a,b,c,x[i+6],9,-1069501632);c=md5gg(c,d,a,b,x[i+11],14,643717713);b=md5gg(b,c,d,a,x[i+0],20,-373897302);
-            a=md5gg(a,b,c,d,x[i+5],5,-701558691);d=md5gg(d,a,b,c,x[i+10],9,38016083);c=md5gg(c,d,a,b,x[i+15],14,-660478335);b=md5gg(b,c,d,a,x[i+4],20,-405537848);
-            a=md5gg(a,b,c,d,x[i+9],5,568446438);d=md5gg(d,a,b,c,x[i+14],9,-1019803690);c=md5gg(c,d,a,b,x[i+3],14,-187363961);b=md5gg(b,c,d,a,x[i+8],20,1163531501);
-            a=md5gg(a,b,c,d,x[i+13],5,-1444681467);d=md5gg(d,a,b,c,x[i+2],9,-51403784);c=md5gg(c,d,a,b,x[i+7],14,1735328473);b=md5gg(b,c,d,a,x[i+12],20,-1926607734);
-            a=md5hh(a,b,c,d,x[i+5],4,-378558);d=md5hh(d,a,b,c,x[i+8],11,-2022574463);c=md5hh(c,d,a,b,x[i+11],16,1839030562);b=md5hh(b,c,d,a,x[i+14],23,-35309556);
-            a=md5hh(a,b,c,d,x[i+1],4,-1530992060);d=md5hh(d,a,b,c,x[i+4],11,1272893353);c=md5hh(c,d,a,b,x[i+7],16,-155497632);b=md5hh(b,c,d,a,x[i+10],23,-1094730640);
-            a=md5hh(a,b,c,d,x[i+13],4,681279174);d=md5hh(d,a,b,c,x[i+0],11,-358537222);c=md5hh(c,d,a,b,x[i+3],16,-722521979);b=md5hh(b,c,d,a,x[i+6],23,76029189);
-            a=md5hh(a,b,c,d,x[i+9],4,-640364487);d=md5hh(d,a,b,c,x[i+12],11,-421815835);c=md5hh(c,d,a,b,x[i+15],16,530742520);b=md5hh(b,c,d,a,x[i+2],23,-995338651);
-            a=md5ii(a,b,c,d,x[i+0],6,-198630844);d=md5ii(d,a,b,c,x[i+7],10,1126891415);c=md5ii(c,d,a,b,x[i+14],15,-1416354905);b=md5ii(b,c,d,a,x[i+5],21,-57434055);
-            a=md5ii(a,b,c,d,x[i+12],6,1700485571);d=md5ii(d,a,b,c,x[i+3],10,-1894986606);c=md5ii(c,d,a,b,x[i+10],15,-1051523);b=md5ii(b,c,d,a,x[i+1],21,-2054922799);
-            a=md5ii(a,b,c,d,x[i+8],6,1873313359);d=md5ii(d,a,b,c,x[i+15],10,-30611744);c=md5ii(c,d,a,b,x[i+6],15,-1560198380);b=md5ii(b,c,d,a,x[i+13],21,1309151649);
-            a=md5ii(a,b,c,d,x[i+4],6,-145523070);d=md5ii(d,a,b,c,x[i+11],10,-1120210379);c=md5ii(c,d,a,b,x[i+2],15,718787259);b=md5ii(b,c,d,a,x[i+9],21,-343485551);
-            a=safeAdd(a,oa);b=safeAdd(b,ob);c=safeAdd(c,oc);d=safeAdd(d,od);
+            const [oa, ob, oc, od] = [a, b, c, d];
+            a = md5ff(a, b, c, d, x[i + 0], 7, -680876936); d = md5ff(d, a, b, c, x[i + 1], 12, -389564586); c = md5ff(c, d, a, b, x[i + 2], 17, 606105819); b = md5ff(b, c, d, a, x[i + 3], 22, -1044525330);
+            a = md5ff(a, b, c, d, x[i + 4], 7, -176418897); d = md5ff(d, a, b, c, x[i + 5], 12, 1200080426); c = md5ff(c, d, a, b, x[i + 6], 17, -1473231341); b = md5ff(b, c, d, a, x[i + 7], 22, -45705983);
+            a = md5ff(a, b, c, d, x[i + 8], 7, 1770035416); d = md5ff(d, a, b, c, x[i + 9], 12, -1958414417); c = md5ff(c, d, a, b, x[i + 10], 17, -42063); b = md5ff(b, c, d, a, x[i + 11], 22, -1990404162);
+            a = md5ff(a, b, c, d, x[i + 12], 7, 1804603682); d = md5ff(d, a, b, c, x[i + 13], 12, -40341101); c = md5ff(c, d, a, b, x[i + 14], 17, -1502002290); b = md5ff(b, c, d, a, x[i + 15], 22, 1236535329);
+            a = md5gg(a, b, c, d, x[i + 1], 5, -165796510); d = md5gg(d, a, b, c, x[i + 6], 9, -1069501632); c = md5gg(c, d, a, b, x[i + 11], 14, 643717713); b = md5gg(b, c, d, a, x[i + 0], 20, -373897302);
+            a = md5gg(a, b, c, d, x[i + 5], 5, -701558691); d = md5gg(d, a, b, c, x[i + 10], 9, 38016083); c = md5gg(c, d, a, b, x[i + 15], 14, -660478335); b = md5gg(b, c, d, a, x[i + 4], 20, -405537848);
+            a = md5gg(a, b, c, d, x[i + 9], 5, 568446438); d = md5gg(d, a, b, c, x[i + 14], 9, -1019803690); c = md5gg(c, d, a, b, x[i + 3], 14, -187363961); b = md5gg(b, c, d, a, x[i + 8], 20, 1163531501);
+            a = md5gg(a, b, c, d, x[i + 13], 5, -1444681467); d = md5gg(d, a, b, c, x[i + 2], 9, -51403784); c = md5gg(c, d, a, b, x[i + 7], 14, 1735328473); b = md5gg(b, c, d, a, x[i + 12], 20, -1926607734);
+            a = md5hh(a, b, c, d, x[i + 5], 4, -378558); d = md5hh(d, a, b, c, x[i + 8], 11, -2022574463); c = md5hh(c, d, a, b, x[i + 11], 16, 1839030562); b = md5hh(b, c, d, a, x[i + 14], 23, -35309556);
+            a = md5hh(a, b, c, d, x[i + 1], 4, -1530992060); d = md5hh(d, a, b, c, x[i + 4], 11, 1272893353); c = md5hh(c, d, a, b, x[i + 7], 16, -155497632); b = md5hh(b, c, d, a, x[i + 10], 23, -1094730640);
+            a = md5hh(a, b, c, d, x[i + 13], 4, 681279174); d = md5hh(d, a, b, c, x[i + 0], 11, -358537222); c = md5hh(c, d, a, b, x[i + 3], 16, -722521979); b = md5hh(b, c, d, a, x[i + 6], 23, 76029189);
+            a = md5hh(a, b, c, d, x[i + 9], 4, -640364487); d = md5hh(d, a, b, c, x[i + 12], 11, -421815835); c = md5hh(c, d, a, b, x[i + 15], 16, 530742520); b = md5hh(b, c, d, a, x[i + 2], 23, -995338651);
+            a = md5ii(a, b, c, d, x[i + 0], 6, -198630844); d = md5ii(d, a, b, c, x[i + 7], 10, 1126891415); c = md5ii(c, d, a, b, x[i + 14], 15, -1416354905); b = md5ii(b, c, d, a, x[i + 5], 21, -57434055);
+            a = md5ii(a, b, c, d, x[i + 12], 6, 1700485571); d = md5ii(d, a, b, c, x[i + 3], 10, -1894986606); c = md5ii(c, d, a, b, x[i + 10], 15, -1051523); b = md5ii(b, c, d, a, x[i + 1], 21, -2054922799);
+            a = md5ii(a, b, c, d, x[i + 8], 6, 1873313359); d = md5ii(d, a, b, c, x[i + 15], 10, -30611744); c = md5ii(c, d, a, b, x[i + 6], 15, -1560198380); b = md5ii(b, c, d, a, x[i + 13], 21, 1309151649);
+            a = md5ii(a, b, c, d, x[i + 4], 6, -145523070); d = md5ii(d, a, b, c, x[i + 11], 10, -1120210379); c = md5ii(c, d, a, b, x[i + 2], 15, 718787259); b = md5ii(b, c, d, a, x[i + 9], 21, -343485551);
+            a = safeAdd(a, oa); b = safeAdd(b, ob); c = safeAdd(c, oc); d = safeAdd(d, od);
         }
-        return [a,b,c,d];
+        return [a, b, c, d];
     }
     const str = utf8Encode(input);
     const result = coreMD5(str2binl(str), str.length * 8);
@@ -233,8 +233,8 @@ function buildQRData(accompList) {
 
     // ── Partie claire ──────────────────────────────────────
     const telephone = d.telephone || '';
-    const nom       = d.nom       || '';
-    const prenom    = d.prenom    || '';
+    const nom = d.nom || '';
+    const prenom = d.prenom || '';
     const partieClaire = [nom, prenom, telephone].join('#');
 
     // ── Accompagnants : index séparés par virgule (remplace '/') ──
@@ -247,7 +247,7 @@ function buildQRData(accompList) {
     let familleStr = '';
     famData.forEach(conjoint => {
         familleStr += '#*';
-        familleStr += '#' + (conjoint.nom    || '');
+        familleStr += '#' + (conjoint.nom || '');
         familleStr += '#' + (conjoint.prenom || '');
         familleStr += '#' + toDisplayDate(conjoint.dateNaissance || '');
         const enfantsTries = [...(conjoint.enfants || [])].sort((a, b) => {
@@ -265,18 +265,18 @@ function buildQRData(accompList) {
     // '/' remplacé par les index des accompagnants cochés
     const partieScrambledRaw = [
         'PWA',
-        d.pere              || '',
-        d.grandpere         || '',
-        d.mereNom           || '',
-        d.merePrenom        || '',
+        d.pere || '',
+        d.grandpere || '',
+        d.mereNom || '',
+        d.merePrenom || '',
         toDisplayDate(d.datenaissance) || '',
-        d.groupesanguin     || '',
+        d.groupesanguin || '',
         d.niveauInstruction || '',
-        d.profession        || '',
-        d.adresseResidence  || '',
-        d.adresseActivite   || '',
-        d.maitrise          || '',
-        d.offres            || '',
+        d.profession || '',
+        d.adresseResidence || '',
+        d.adresseActivite || '',
+        d.maitrise || '',
+        d.offres || '',
         '-',
         accompStr           // ← à la place de '/'
     ].join('#') + familleStr;
@@ -294,8 +294,8 @@ function generateQR(accompList) {
     if (!container) return;
 
     const d = JSON.parse(localStorage.getItem('pwa_profile') || '{}');
-    const nom       = d.nom       || '';
-    const prenom    = d.prenom    || '';
+    const nom = d.nom || '';
+    const prenom = d.prenom || '';
     const telephone = d.telephone || '';
 
     if (!nom && !prenom) {
@@ -333,7 +333,7 @@ function generateQR(accompList) {
                     }
                 }
             }, 200);
-        } catch(err) {
+        } catch (err) {
             console.warn('QRCode lib error:', err);
             canvas.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(data)}"
                 width="220" height="220" alt="QR Code"
@@ -370,7 +370,7 @@ function renderFamilleQR() {
     list.innerHTML = membres.map((nom, i) => `
         <label style="display:flex; align-items:center; gap:10px; padding:8px 4px;
                        border-bottom:1px solid #eee; cursor:pointer; font-size:0.97rem;">
-            <input type="checkbox" data-index="${i+1}"
+            <input type="checkbox" data-index="${i + 1}"
                 onchange="onFamilleQRChange()"
                 style="width:18px; height:18px; accent-color:#007bff; flex-shrink:0;">
             <span>${nom}</span>
@@ -469,7 +469,7 @@ let famille = []; // tableau de conjoints: { id, nom, prenom, dateNaissance, enf
 let conjointCounter = 0;
 let enfantCounter = 0;
 
-const conjointLabels = ['الزوجة الأولى','الزوجة الثانية','الزوجة الثالثة','الزوجة الرابعة'];
+const conjointLabels = ['الزوجة الأولى', 'الزوجة الثانية', 'الزوجة الثالثة', 'الزوجة الرابعة'];
 
 function renderFamille() {
     const zone = document.getElementById('famille-zone');
@@ -582,24 +582,24 @@ function updateEnfant(conjointId, enfantId, field, val) {
 document.getElementById('userForm').onsubmit = (e) => {
     e.preventDefault();
     const data = {
-        nom:               document.getElementById('f_nom').value,
-        prenom:            document.getElementById('f_prenom').value,
-        pere:              document.getElementById('f_pere').value,
-        grandpere:         document.getElementById('f_grandpere').value,
-        mereNom:           document.getElementById('f_mereNom').value,
-        merePrenom:        document.getElementById('f_merePrenom').value,
-        datenaissance:     document.getElementById('f_datenaissance').value,
-        groupesanguin:     document.getElementById('f_groupesanguin').value,
-        telephone:         document.getElementById('f_telephone').value,
-        familleAlger:      document.getElementById('f_familleAlger').value,
+        nom: document.getElementById('f_nom').value,
+        prenom: document.getElementById('f_prenom').value,
+        pere: document.getElementById('f_pere').value,
+        grandpere: document.getElementById('f_grandpere').value,
+        mereNom: document.getElementById('f_mereNom').value,
+        merePrenom: document.getElementById('f_merePrenom').value,
+        datenaissance: document.getElementById('f_datenaissance').value,
+        groupesanguin: document.getElementById('f_groupesanguin').value,
+        telephone: document.getElementById('f_telephone').value,
+        familleAlger: document.getElementById('f_familleAlger').value,
         niveauInstruction: document.getElementById('f_niveauInstruction').value,
-        profession:        document.getElementById('f_profession').value,
-        adresseResidence:  document.getElementById('f_adresseResidence').value,
-        adresseActivite:   document.getElementById('f_adresseActivite').value,
-        mokataa:           document.getElementById('f_mokataa').value,
-        maitrise:          document.getElementById('f_maitrise').value,
-        offres:            document.getElementById('f_offres').value,
-        famille:           famille
+        profession: document.getElementById('f_profession').value,
+        adresseResidence: document.getElementById('f_adresseResidence').value,
+        adresseActivite: document.getElementById('f_adresseActivite').value,
+        mokataa: document.getElementById('f_mokataa').value,
+        maitrise: document.getElementById('f_maitrise').value,
+        offres: document.getElementById('f_offres').value,
+        famille: famille
     };
     // Copie profonde de famille pour le tri — ne pas muter le tableau en mémoire
     const familleSauvegarde = JSON.parse(JSON.stringify(famille));
@@ -640,10 +640,10 @@ window.onload = async () => {
     const raw = localStorage.getItem('pwa_profile');
     if (!raw) return;
     const d = JSON.parse(raw);
-    const fields = ['nom','prenom','pere','grandpere','mereNom','merePrenom',
-                    'datenaissance','groupesanguin','telephone','familleAlger',
-                    'niveauInstruction','profession','adresseResidence',
-                    'adresseActivite','mokataa','maitrise','offres'];
+    const fields = ['nom', 'prenom', 'pere', 'grandpere', 'mereNom', 'merePrenom',
+        'datenaissance', 'groupesanguin', 'telephone', 'familleAlger',
+        'niveauInstruction', 'profession', 'adresseResidence',
+        'adresseActivite', 'mokataa', 'maitrise', 'offres'];
     fields.forEach(f => {
         const el = document.getElementById('f_' + f);
         if (el && d[f]) el.value = d[f];
@@ -688,7 +688,7 @@ async function loadFeed() {
     publications.forEach((pub, i) => {
         const isRead = readIds.includes(pub.id);
         if (!isRead && firstUnreadIndex === -1) firstUnreadIndex = i;
-        const dateStr = new Date(pub.date).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' });
+        const dateStr = new Date(pub.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
         html += `
             <div class="pub-bubble ${isRead ? 'pub-read' : 'pub-unread'}" id="pub-${pub.id}" onclick="markRead('${pub.id}')">
                 <div class="pub-type">${pub.type}</div>
@@ -708,7 +708,7 @@ async function loadFeed() {
 async function refreshFeed() {
     const container = document.getElementById('feed-container');
     if (!container) return;
-    await loadFeed();
+    //    await loadFeed();
     if (!navigator.onLine) return;
     const indicator = document.createElement('div');
     indicator.id = 'sync-indicator';
@@ -716,8 +716,8 @@ async function refreshFeed() {
     indicator.textContent = '🔄 Mise à jour...';
     container.prepend(indicator);
     try {
-        await syncPublications();
-        await loadFeed();
+        //        await syncPublications();
+        //        await loadFeed();
     } catch (err) {
         console.warn('Sync failed:', err);
     } finally {
@@ -768,36 +768,36 @@ async function testFCM() {
         console.log("AVANT FETCH");
 
         const response = await fetch(
-        //'https://bind-regular-football-local.trycloudflare.com/register',
-        //'https://matters-clock-ozone-brunette.trycloudflare.com/register',
-        'https://api.adlil.net/register',
-        {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                clientId: CLIENT_ID,
-                token: token
-             })
-        }
-        );
-
-        console.log("APRES FETCH", response.status);
-
-    /*
-        const response = await fetch(
-            'https://westminster-boats-realistic-simulations.trycloudflare.com/register',
+            //'https://bind-regular-football-local.trycloudflare.com/register',
+            //'https://matters-clock-ozone-brunette.trycloudflare.com/register',
+            'https://api.adlil.net/register',
             {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     clientId: CLIENT_ID,
                     token: token
                 })
             }
         );
-    */
+
+        console.log("APRES FETCH", response.status);
+
+        /*
+            const response = await fetch(
+                'https://westminster-boats-realistic-simulations.trycloudflare.com/register',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        clientId: CLIENT_ID,
+                        token: token
+                    })
+                }
+            );
+        */
         const result = await response.json();
         console.log('✅ Enregistrement serveur :', result);
 
@@ -815,42 +815,65 @@ testFCM();
 
 const DEV_SERVER = 'https://dev-api.adlil.net';
 
-async function loadDevImages() {
-    try {
-        const response = await fetch(`${DEV_SERVER}/dev/images`);
-        const data = await response.json();
-
-        console.log('🖼️ Images DEV :', data);
-
-        if (data.success) {
-            data.images.forEach(image => {
-                console.log(
-                    'Image :',
-                    `${DEV_SERVER}/dev/images/${image.filename}`
-                );
-            });
-        }
-    } catch (err) {
-        console.error('❌ Serveur DEV inaccessible :', err);
-    }
-}
-
-loadDevImages();
-
 // ============================================================
 // TEST FEED PUBLICATIONS DEV
 // ============================================================
 
-async function loadDevPublications() {
+async function loadDevFeed() {
+    const container = document.getElementById('feed-container');
+    if (!container) return;
+
     try {
-        const response = await fetch(`${DEV_SERVER}/dev/images`)
+        const response = await fetch(`${DEV_SERVER}/dev/publications`);
         const data = await response.json();
 
-        console.log('📚 Publications DEV :', data);
+        if (!data.success) return;
+
+        let html = '';
+
+        data.publications.forEach(pub => {
+
+            // IMAGE
+            if (pub.type === 'image') {
+                html += `
+                    <div class="pub-bubble">
+                        <img
+                            src="${DEV_SERVER}/dev/files/${pub.filename}"
+                            style="width:180px; height:120px; object-fit:cover; cursor:pointer; border-radius:8px;"
+                            onclick="window.open('${DEV_SERVER}/dev/files/${pub.filename}', '_blank')"
+                        >
+                    </div>
+                `;
+            }
+
+            // PDF
+            if (pub.type === 'pdf') {
+                html += `
+                    <div class="pub-bubble"
+                         onclick="window.open('${DEV_SERVER}/dev/files/${pub.filename}', '_blank')"
+                         style="cursor:pointer;">
+                        <div style="font-size:40px;">📄</div>
+                        <div style="font-weight:bold;">PDF</div>
+                        <div>${pub.filename}</div>
+                    </div>
+                `;
+            }
+
+            // TEXTE
+            if (pub.type === 'text') {
+                html += `
+                    <div class="pub-bubble">
+                        ${pub.content}
+                    </div>
+                `;
+            }
+        });
+
+        container.innerHTML = html;
 
     } catch (err) {
-        console.error('❌ Serveur DEV inaccessible :', err);
+        console.error('❌ Feed DEV :', err);
     }
 }
 
-loadDevPublications();
+loadDevFeed();
