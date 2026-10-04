@@ -813,7 +813,7 @@ testFCM();
 // TEST IMAGES DEV
 // ============================================================
 
-const DEV_SERVER = 'http://localhost:3001';
+const DEV_SERVER = 'https://dev-api.adlil.net';
 
 async function loadDevImages() {
     try {
@@ -836,3 +836,21 @@ async function loadDevImages() {
 }
 
 loadDevImages();
+
+// ============================================================
+// TEST FEED PUBLICATIONS DEV
+// ============================================================
+
+async function loadDevPublications() {
+    try {
+        const response = await fetch('http://localhost:3001/dev/images');
+        const data = await response.json();
+
+        console.log('📚 Publications DEV :', data);
+
+    } catch (err) {
+        console.error('❌ Serveur DEV inaccessible :', err);
+    }
+}
+
+loadDevPublications();
