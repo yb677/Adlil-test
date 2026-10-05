@@ -91,7 +91,7 @@ self.addEventListener('fetch', (e) => {
             .then(cached => cached || fetch(e.request))
     );
 });
-
+/*
 messaging.onBackgroundMessage((payload) => {
     console.log("Message reçu en arrière-plan :", payload);
 
@@ -103,3 +103,4 @@ messaging.onBackgroundMessage((payload) => {
         }
     );
 });
+*/

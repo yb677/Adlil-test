@@ -802,48 +802,370 @@ const DEV_SERVER = 'https://dev-api.adlil.net';
 // TEST FEED PUBLICATIONS DEV
 // ============================================================
 
+const DEV_DB_NAME = "adlil-dev-db";
+const DEV_STORE = "publications";
+
+function openDevDB() {
+    return new Promise((resolve, reject) => {
+
+        const request = indexedDB.open(DEV_DB_NAME, 1);
+
+        request.onupgradeneeded = function (event) {
+            const db = event.target.result;
+
+            if (!db.objectStoreNames.contains(DEV_STORE)) {
+                db.createObjectStore(DEV_STORE, {
+                    keyPath: "id"
+                });
+            }
+        };
+
+        request.onsuccess = function () {
+            resolve(request.result);
+        };
+
+        request.onerror = function () {
+            reject(request.error);
+        };
+    });
+}
+
+async function saveDevPublications(publications) {
+
+    const db = await openDevDB();
+
+    for (const pub of publications) {
+
+        let blob = null;
+
+        // Télécharger le fichier avant d'ouvrir la transaction
+        if (pub.type === "image" || pub.type === "pdf") {
+
+            const response = await fetch(
+                `${DEV_SERVER}/dev/files/${pub.filename}`
+            );
+
+            if (!response.ok) {
+                throw new Error(
+                    `Erreur téléchargement : ${pub.filename}`
+                );
+            }
+
+            blob = await response.blob();
+        }
+
+        // Ouvrir une nouvelle transaction uniquement pour l'écriture
+        await new Promise((resolve, reject) => {
+
+            const transaction = db.transaction(
+                DEV_STORE,
+                "readwrite"
+            );
+
+            const store = transaction.objectStore(DEV_STORE);
+
+            if (blob) {
+                pub.blob = blob;
+            }
+
+            const request = store.put(pub);
+
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+        });
+    }
+}
+
+async function saveDevMetadata(publications) {
+
+    const db = await openDevDB();
+
+    return new Promise((resolve, reject) => {
+
+        const transaction = db.transaction(
+            DEV_STORE,
+            "readwrite"
+        );
+
+        const store = transaction.objectStore(DEV_STORE);
+
+        publications.forEach(pub => {
+
+            // On conserve les métadonnées,
+            // mais pas le Blob du fichier
+            store.put(pub);
+
+        });
+
+        transaction.oncomplete = () => {
+            resolve();
+        };
+
+        transaction.onerror = () => {
+            reject(transaction.error);
+        };
+    });
+}
+
+async function getDevPublications() {
+
+    const db = await openDevDB();
+
+    return new Promise((resolve, reject) => {
+
+        const transaction = db.transaction(
+            DEV_STORE,
+            "readonly"
+        );
+
+        const store = transaction.objectStore(DEV_STORE);
+
+        const request = store.getAll();
+
+        request.onsuccess = () => {
+            resolve(request.result);
+        };
+
+        request.onerror = () => {
+            reject(request.error);
+        };
+    });
+}
+
+async function downloadImageInBackground(pub) {
+
+    try {
+
+        const response = await fetch(
+            `${DEV_SERVER}/dev/files/${pub.filename}`
+        );
+
+        if (!response.ok) {
+            throw new Error("Téléchargement impossible");
+        }
+
+        const blob = await response.blob();
+
+        const db = await openDevDB();
+
+        await new Promise((resolve, reject) => {
+
+            const transaction = db.transaction(
+                DEV_STORE,
+                "readwrite"
+            );
+
+            const store = transaction.objectStore(DEV_STORE);
+
+            pub.blob = blob;
+            pub.downloaded = true;
+
+            const request = store.put(pub);
+
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+        });
+
+        console.log(
+            "✅ Image téléchargée :",
+            pub.filename
+        );
+
+    } catch (err) {
+
+        console.log(
+            "⏳ Image non téléchargée :",
+            pub.filename
+        );
+    }
+}
+
+async function openDevFile(pub) {
+
+    try {
+
+        // Déjà téléchargé
+        if (pub.blob) {
+
+            const url = URL.createObjectURL(pub.blob);
+
+            window.open(url, "_blank");
+
+            return;
+        }
+
+        // Pas encore téléchargé
+        console.log(
+            "⏳ Téléchargement avant ouverture :",
+            pub.filename
+        );
+
+        const response = await fetch(
+            `${DEV_SERVER}/dev/files/${pub.filename}`
+        );
+
+        if (!response.ok) {
+            throw new Error("Téléchargement impossible");
+        }
+
+        const blob = await response.blob();
+
+        // Sauvegarder le fichier
+        const db = await openDevDB();
+
+        await new Promise((resolve, reject) => {
+
+            const transaction =
+                db.transaction(DEV_STORE, "readwrite");
+
+            const store =
+                transaction.objectStore(DEV_STORE);
+
+            pub.blob = blob;
+            pub.downloaded = true;
+
+            const request = store.put(pub);
+
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+        });
+
+        // Ouvrir
+        const url = URL.createObjectURL(blob);
+
+        window.open(url, "_blank");
+
+    } catch (err) {
+
+        console.error(
+            "❌ Ouverture fichier :",
+            err
+        );
+    }
+}
+
+async function openDevFileById(id) {
+
+    try {
+
+        const publications = await getDevPublications();
+
+        const pub = publications.find(
+            p => p.id === Number(id)
+        );
+
+        if (!pub) {
+            console.error("Publication introuvable :", id);
+            return;
+        }
+
+        await openDevFile(pub);
+
+    } catch (err) {
+
+        console.error(
+            "❌ Ouverture fichier :",
+            err
+        );
+    }
+}
+
 async function loadDevFeed() {
+
     const container = document.getElementById('feed-container');
+
     if (!container) return;
 
     try {
-        const response = await fetch(`${DEV_SERVER}/dev/publications`);
+
+        // 1. Récupérer uniquement les nouvelles publications
+        const response = await fetch(
+            `${DEV_SERVER}/dev/publications?clientId=${CLIENT_ID}`
+        );
+
         const data = await response.json();
 
         if (!data.success) return;
 
+        console.log(
+            "📦 PUBLICATIONS REÇUES :",
+            data.publications
+        );
+
+        // 2. Sauvegarder immédiatement les métadonnées
+        //    (sans télécharger les fichiers originaux)
+        if (data.publications.length > 0) {
+
+            await saveDevMetadata(data.publications);
+
+            const lastId =
+                data.publications[
+                    data.publications.length - 1
+                ].id;
+
+            await fetch(
+                `${DEV_SERVER}/dev/sync-confirm`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        clientId: CLIENT_ID,
+                        lastId: lastId
+                    })
+                }
+            );
+        }
+
+        // 3. Afficher immédiatement le feed local
+        const publications = await getDevPublications();
+
         let html = '';
 
-        data.publications.forEach(pub => {
+        publications.forEach(pub => {
 
-            // IMAGE
             if (pub.type === 'image') {
+
+                const thumbnailUrl =
+                    `${DEV_SERVER}/dev/thumbnails/${pub.filename}`;
+
                 html += `
                     <div>
                         <img
-                            src="${DEV_SERVER}/dev/files/${pub.filename}"
+                            src="${thumbnailUrl}"
+                            data-pub-id="${pub.id}"
+                            class="dev-image-thumbnail"
                             style="width:180px; height:120px; object-fit:cover; cursor:pointer; border-radius:8px;"
-                            onclick="window.open('${DEV_SERVER}/dev/files/${pub.filename}', '_blank')"
                         >
                     </div>
                 `;
             }
 
-            // PDF
             if (pub.type === 'pdf') {
+
+                const thumbnailName =
+                    pub.filename.replace(/\.pdf$/i, '.jpg');
+
+                const thumbnailUrl =
+                    `${DEV_SERVER}/dev/thumbnails/${thumbnailName}`;
+
                 html += `
                     <div
-                         onclick="window.open('${DEV_SERVER}/dev/files/${pub.filename}', '_blank')"
-                         style="cursor:pointer;">
-                        <div style="font-size:40px;">📄</div>
-                        <div style="font-weight:bold;">PDF</div>
-                        <div>${pub.filename.replace(/\.[^/.]+$/, '')}</div>
+                        data-pub-id="${pub.id}"
+                        class="dev-pdf-item"
+                        style="cursor:pointer;"
+                    >
+                        <img
+                            src="${thumbnailUrl}"
+                            style="width:180px; height:120px; object-fit:cover; border-radius:8px;"
+                        >
                     </div>
                 `;
             }
 
-            // TEXTE
             if (pub.type === 'text') {
+
                 html += `
                     <div class="pub-bubble">
                         ${pub.content}
@@ -854,8 +1176,89 @@ async function loadDevFeed() {
 
         container.innerHTML = html;
 
+        container.querySelectorAll(".dev-image-thumbnail, .dev-pdf-item")
+            .forEach(element => {
+
+                element.addEventListener("click", () => {
+                    openDevFileById(element.dataset.pubId);
+                });
+
+            });
+
+        // 4. Maintenant seulement :
+        //    télécharger les originaux en arrière-plan
+        publications.forEach(pub => {
+
+            if (pub.type === "image" && !pub.downloaded) {
+                downloadImageInBackground(pub);
+            }
+
+        });
+
     } catch (err) {
+
         console.error('❌ Feed DEV :', err);
+
+        // Hors ligne
+        try {
+
+            const publications = await getDevPublications();
+
+            let html = '';
+
+            publications.forEach(pub => {
+
+                if (pub.type === 'image') {
+
+                    if (pub.blob) {
+
+                        const url =
+                            URL.createObjectURL(pub.blob);
+
+                        html += `
+                            <div>
+                                <img
+                                    src="${url}"
+                                    style="width:180px; height:120px; object-fit:cover; border-radius:8px;"
+                                >
+                            </div>
+                        `;
+                    }
+                }
+
+                if (pub.type === 'pdf') {
+
+                    html += `
+                        <div>
+                            <div style="font-size:40px;">📄</div>
+                            <div style="font-weight:bold;">PDF</div>
+                            <div>
+                                ${pub.filename.replace(/\.[^/.]+$/, '')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                if (pub.type === 'text') {
+
+                    html += `
+                        <div class="pub-bubble">
+                            ${pub.content}
+                        </div>
+                    `;
+                }
+
+            });
+
+            container.innerHTML = html;
+
+        } catch (offlineErr) {
+
+            console.error(
+                '❌ Lecture IndexedDB :',
+                offlineErr
+            );
+        }
     }
 }
 
