@@ -768,9 +768,7 @@ async function testFCM() {
         console.log("AVANT FETCH");
 
         const response = await fetch(
-            //'https://bind-regular-football-local.trycloudflare.com/register',
-            //'https://matters-clock-ozone-brunette.trycloudflare.com/register',
-            'https://api.adlil.net/register',
+            'https://dev-fcm.adlil.net/register',
             {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -783,21 +781,6 @@ async function testFCM() {
 
         console.log("APRES FETCH", response.status);
 
-        /*
-            const response = await fetch(
-                'https://westminster-boats-realistic-simulations.trycloudflare.com/register',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        clientId: CLIENT_ID,
-                        token: token
-                    })
-                }
-            );
-        */
         const result = await response.json();
         console.log('✅ Enregistrement serveur :', result);
 
@@ -836,7 +819,7 @@ async function loadDevFeed() {
             // IMAGE
             if (pub.type === 'image') {
                 html += `
-                    <div class="pub-bubble">
+                    <div>
                         <img
                             src="${DEV_SERVER}/dev/files/${pub.filename}"
                             style="width:180px; height:120px; object-fit:cover; cursor:pointer; border-radius:8px;"
@@ -849,12 +832,12 @@ async function loadDevFeed() {
             // PDF
             if (pub.type === 'pdf') {
                 html += `
-                    <div class="pub-bubble"
+                    <div
                          onclick="window.open('${DEV_SERVER}/dev/files/${pub.filename}', '_blank')"
                          style="cursor:pointer;">
                         <div style="font-size:40px;">📄</div>
                         <div style="font-weight:bold;">PDF</div>
-                        <div>${pub.filename}</div>
+                        <div>${pub.filename.replace(/\.[^/.]+$/, '')}</div>
                     </div>
                 `;
             }
