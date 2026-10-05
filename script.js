@@ -741,7 +741,7 @@ messaging.onMessage((payload) => {
         payload.notification?.title || "ADLIL",
         {
             body: payload.notification?.body || "",
-            icon: "./icon-192.png"
+            icon: "/Adlil-test/icon-192.png"
         }
     );
 });
