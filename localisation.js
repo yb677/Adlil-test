@@ -16,7 +16,8 @@ function afficherVueLocalisation() {
     }
 }
 
-const SERVEUR = "http://localhost:3001";
+const SERVEUR = `http://${window.location.hostname}:3001`;
+//const SERVEUR = "http://localhost:3001";
 const PALETTE = ['#e53935', '#1e88e5', '#43a047', '#fb8c00', '#8e24aa', '#00acc1'];
 
 function icone(couleur, perime) {

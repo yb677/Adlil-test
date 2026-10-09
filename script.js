@@ -10,7 +10,7 @@ const iosArrow = document.getElementById('ios-arrow-help');
 const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 const isMobile = false; // /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
+//yb
 // ============================================================
 // INDEXEDDB INIT
 // ============================================================
@@ -26,8 +26,17 @@ function getClientId() {
     let clientId = localStorage.getItem('adlil_client_id');
 
     if (!clientId) {
-        clientId = crypto.randomUUID();
-        localStorage.setItem('adlil_client_id', clientId);
+// -- initial block
+//        clientId = crypto.randomUUID();
+// -- yb block
+        // Si crypto.randomUUID est disponible (sur PC / HTTPS), on l'utilise
+        if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+            clientId = crypto.randomUUID();
+        } else
+        // Solution de secours (Fallback) pour le mobile en HTTP local
+            clientId = 'id-' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+// -- block end
+            localStorage.setItem('adlil_client_id', clientId);
     }
 
     return clientId;

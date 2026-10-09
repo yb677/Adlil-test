@@ -12,7 +12,7 @@ firebase.initializeApp({
     appId: "1:178895455937:web:90d03218b3f78e0d67f640"
 });
 const messaging = firebase.messaging();
-const CACHE_VERSION = 31;
+const CACHE_VERSION = 33;
 const CACHE_NAME = `mon-app-v${CACHE_VERSION}`;
 
 // ─── FICHIERS À METTRE EN CACHE ─────────────────────────────────────────────
