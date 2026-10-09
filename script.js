@@ -9,7 +9,7 @@ const iosArrow = document.getElementById('ios-arrow-help');
 
 const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+const isMobile = false; // /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
 // ============================================================
 // INDEXEDDB INIT
@@ -134,12 +134,53 @@ function showView(viewId) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById('view-' + viewId).classList.add('active');
     document.getElementById('sideMenu').classList.remove('active');
+
     if (viewId === 'qr') {
-        generateQR();       // génère le canvas
-        renderFamilleQR();  // construit la liste (une seule fois, sans toucher le canvas)
+        generateQR();
+        renderFamilleQR();
     }
     if (viewId === 'welcome') refreshFeed();
+
+    if (viewId === 'localisation') {
+        if (!carte) {
+            initCarte();
+        } else {
+            carte.invalidateSize();
+        }
+    }
 }
+
+let timerSuivi = null;
+
+async function api(chemin, corps) {
+  const r = await fetch(SERVEUR + chemin, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: localStorage.getItem('monId'), ...corps })
+  });
+  return r.json();
+}
+
+// Ligne de liste : texte + boutons (le texte est inséré en textContent : sécurisé)
+function ligne(texte, boutons) {
+  const div = document.createElement('div');
+  div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;' +
+                      'gap:6px;padding:6px 0;border-bottom:1px solid #eee;';
+  const span = document.createElement('span');
+  span.textContent = texte;
+  const zone = document.createElement('span');
+  boutons.forEach(([label, fn]) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = label;
+    b.onclick = fn;
+    b.style.marginInlineStart = '4px';
+    zone.append(b);
+  });
+  div.append(span, zone);
+  return div;
+}
+
 
 // Convertit YYYY-MM-DD → JJ/MM/AA
 function toDisplayDate(iso) {
@@ -1070,6 +1111,48 @@ async function openDevFileById(id) {
     }
 }
 
+function formatPubDate(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+
+    const today = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+    );
+
+    const pubDay = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate()
+    );
+
+    const diffDays =
+        Math.floor((today - pubDay) / 86400000);
+
+    if (diffDays === 0) return "Aujourd’hui";
+    if (diffDays === 1) return "Hier";
+
+    if (diffDays < 7) {
+        return date.toLocaleDateString("fr-FR", {
+            weekday: "long"
+        });
+    }
+
+    return date.toLocaleDateString("fr-FR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+    });
+}
+
+function formatPubTime(dateString) {
+    return new Date(dateString).toLocaleTimeString("fr-FR", {
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+}
+
 async function loadDevFeed() {
 
     const container = document.getElementById('feed-container');
@@ -1120,10 +1203,50 @@ async function loadDevFeed() {
 
         // 3. Afficher immédiatement le feed local
         const publications = await getDevPublications();
+        const lastSeenId = localStorage.getItem("adlil_last_seen_id");
 
         let html = '';
+        let lastDay = '';
+
+        let newMessagesInserted = false;
 
         publications.forEach(pub => {
+
+            if (
+                lastSeenId &&
+                !newMessagesInserted &&
+                pub.id > Number(lastSeenId)
+            ) {
+                html += `
+                    <div style="
+                        text-align:center;
+                        margin:12px 0;
+                        font-size:13px;
+                        color:#666;
+                    ">
+                        ─── Nouveaux messages ───
+                    </div>
+                `;
+
+                newMessagesInserted = true;
+            }
+
+            const day = formatPubDate(pub.created_at);
+
+            if (day !== lastDay) {
+                html += `
+                    <div style="
+                        text-align:center;
+                        margin:12px 0;
+                        font-size:13px;
+                        color:#666;
+                    ">
+                        ${day}
+                    </div>
+                `;
+
+                lastDay = day;
+            }
 
             if (pub.type === 'image') {
 
@@ -1136,7 +1259,7 @@ async function loadDevFeed() {
                             src="${thumbnailUrl}"
                             data-pub-id="${pub.id}"
                             class="dev-image-thumbnail"
-                            style="width:180px; height:120px; object-fit:cover; cursor:pointer; border-radius:8px;"
+                            style="width:180px; height:auto; cursor:pointer; border-radius:8px; box-shadow:10px 10px 15px rgba(0,0,0,0.7);"
                         >
                     </div>
                 `;
@@ -1158,7 +1281,7 @@ async function loadDevFeed() {
                     >
                         <img
                             src="${thumbnailUrl}"
-                            style="width:180px; height:120px; object-fit:cover; border-radius:8px;"
+                            style="width:180px; height:auto; border-radius:8px; box-shadow:0px 6px 18px rgba(0,0,0,0.25);"
                         >
                     </div>
                 `;
@@ -1167,8 +1290,25 @@ async function loadDevFeed() {
             if (pub.type === 'text') {
 
                 html += `
-                    <div class="pub-bubble">
-                        ${pub.content}
+                    <div class="pub-bubble" dir="auto" style="
+                        cursor: default;
+                        text-align: start;
+                        white-space: normal;
+                        overflow-wrap: break-word;
+                        word-break: break-word;
+                        border-left: none;
+                        box-shadow: 5px 5px 8px rgba(0,0,0,0.1);
+                    ">
+                        ${pub.content.replace(/\n/g, "<br>")}
+                        <span style="
+                            float:right;
+                            font-size:11px;
+                            color:#777;
+                            margin-left:8px;
+                            margin-top:24px;
+                        ">
+                            ${formatPubTime(pub.created_at)}
+                        </span>
                     </div>
                 `;
             }
@@ -1176,11 +1316,39 @@ async function loadDevFeed() {
 
         container.innerHTML = html;
 
+        const lastElement = container.lastElementChild;
+
+        if (lastElement) {
+
+            const observer = new IntersectionObserver((entries) => {
+
+                if (entries[0].isIntersecting) {
+
+                    console.log("✅ Dernier record affiché :");
+                    refresh();
+
+                    observer.disconnect();
+                }
+
+            });
+
+            observer.observe(lastElement);
+
+        }
+
         container.querySelectorAll(".dev-image-thumbnail, .dev-pdf-item")
             .forEach(element => {
 
-                element.addEventListener("click", () => {
-                    openDevFileById(element.dataset.pubId);
+                element.addEventListener("click", async () => {
+
+                    await openDevFileById(element.dataset.pubId);
+
+                    localStorage.setItem(
+                        "adlil_last_seen_id",
+                        publications[publications.length - 1].id
+                    );
+
+                    loadDevFeed();
                 });
 
             });
@@ -1242,8 +1410,14 @@ async function loadDevFeed() {
                 if (pub.type === 'text') {
 
                     html += `
-                        <div class="pub-bubble">
-                            ${pub.content}
+                        <div class="pub-bubble" dir="auto" style="
+                            cursor: default;
+                            text-align: start;
+                            white-space: normal;
+                            overflow-wrap: break-word;
+                            word-break: break-word;
+                        ">
+                            ${pub.content.replace(/\n/g, "<br>")}
                         </div>
                     `;
                 }
@@ -1262,4 +1436,22 @@ async function loadDevFeed() {
     }
 }
 
+async function refresh() {
+
+    const publications = await getDevPublications();
+
+    if (publications.length > 0) {
+        localStorage.setItem(
+            "adlil_last_seen_id",
+            publications[publications.length - 1].id
+        );
+    }
+
+    console.log("REFRESH");
+}
+
 loadDevFeed();
+
+setInterval(() => {
+    loadDevFeed();
+}, 10000);

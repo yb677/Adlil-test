@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -9,6 +14,11 @@
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
     <style>
+        #googleMap {
+            position: relative;
+            z-index: 0;
+            isolation: isolate;
+        }
         /* Grille deux colonnes pour les paires de champs */
         .field-row {
             display: grid;
@@ -72,6 +82,7 @@
             .field-row {
                 gap: 8px;
             }
+
             .field-group input,
             .field-group select,
             .field-full input,
@@ -79,10 +90,12 @@
                 font-size: 0.95rem;
                 padding: 7px 9px;
             }
+
             .field-group label,
             .field-full label {
                 font-size: 0.80rem;
             }
+
             fieldset {
                 padding: 10px;
             }
@@ -95,6 +108,7 @@
             padding: 16px;
             margin-bottom: 16px;
         }
+
         legend {
             font-weight: bold;
             padding: 0 8px;
@@ -106,6 +120,7 @@
             direction: rtl;
             text-align: right;
         }
+
         #view-app input,
         #view-app select {
             text-align: right;
@@ -121,19 +136,18 @@
         }
     </style>
 </head>
+
 <body>
 
-<!-- Écran Installation (Dynamique selon l'OS) -->
-<div id="install-screen" class="system-screen">
-    <img src="icon-192.png" alt="ADLIL"
-         style="width:100px; height:100px; border-radius:22px;
-                box-shadow:0 4px 15px rgba(0,0,0,0.15); margin-bottom:16px;"
-         onerror="this.style.display='none'">
-    <h1 style="direction:rtl; font-size:1.4rem; margin-bottom: 30px;">مرحبا بك في تطبيق أدليل</h1>
-    
-    <!-- Message pour Android -->
-    <div id="msg-android" style="display:none;">
-        <button id="btnInstallLarge" style="
+    <!-- Écran Installation (Dynamique selon l'OS) -->
+    <div id="install-screen" class="system-screen">
+        <img src="icon-192.png" alt="ADLIL" style="width:100px; height:100px; border-radius:22px;
+                box-shadow:0 4px 15px rgba(0,0,0,0.15); margin-bottom:16px;" onerror="this.style.display='none'">
+        <h1 style="direction:rtl; font-size:1.4rem; margin-bottom: 30px;">مرحبا بك في تطبيق أدليل</h1>
+
+        <!-- Message pour Android -->
+        <div id="msg-android" style="display:none;">
+            <button id="btnInstallLarge" style="
             background: #28a745;
             color: white;
             border: none;
@@ -145,41 +159,37 @@
             box-shadow: 0 4px 15px rgba(40,167,69,0.4);
             margin-top: 20px;
         ">تثبيت التطبيق</button>
-    </div>
-
-    <!-- Message pour iOS (iPhone/iPad) -->
-    <div id="msg-ios" style="display:none;">
-        <p style="font-size: 1.1rem; background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #ddd; direction: rtl;">
-            1. اضغط على زر <strong>مشاركة</strong> في أسفل Safari.<br><br>
-            2. اختر <strong>"إضافة إلى الشاشة الرئيسية"</strong>.
-        </p>
-    </div>
-
-    <!-- QR Code du lien avec icône ADLIL superposée -->
-    <div style="margin-top:28px; text-align:center;">
-        <p style="font-size:0.9rem; color:#666; margin-bottom:10px;">أو شارك الرابط عبر رمز QR</p>
-        <div style="position:relative; display:inline-block;">
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://yb677.github.io/mon-app/&margin=10"
-                 width="180" height="180"
-                 style="display:block; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.15);"
-                 alt="QR ADLIL">
-            <!-- Icône ADLIL superposée au centre -->
-            <img src="icon-192.png" alt="ADLIL"
-                 style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-                        width:40px; height:40px; border-radius:8px;
-                        box-shadow:0 2px 6px rgba(0,0,0,0.3);"
-                 onerror="this.style.display='none'">
         </div>
-        <p style="font-size:0.8rem; color:#aaa; margin-top:8px;">https://yb677.github.io/mon-app/</p>
+
+        <!-- Message pour iOS (iPhone/iPad) -->
+        <div id="msg-ios" style="display:none;">
+            <p
+                style="font-size: 1.1rem; background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #ddd; direction: rtl;">
+                1. اضغط على زر <strong>مشاركة</strong> في أسفل Safari.<br><br>
+                2. اختر <strong>"إضافة إلى الشاشة الرئيسية"</strong>.
+            </p>
+        </div>
+
+        <!-- QR Code du lien avec icône ADLIL superposée -->
+        <div style="margin-top:28px; text-align:center;">
+            <p style="font-size:0.9rem; color:#666; margin-bottom:10px;">أو شارك الرابط عبر رمز QR</p>
+            <div style="position:relative; display:inline-block;">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://yb677.github.io/mon-app/&margin=10"
+                    width="180" height="180"
+                    style="display:block; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.15);" alt="QR ADLIL">
+                <!-- Icône ADLIL superposée au centre -->
+                <img src="icon-192.png" alt="ADLIL" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+                        width:40px; height:40px; border-radius:8px;
+                        box-shadow:0 2px 6px rgba(0,0,0,0.3);" onerror="this.style.display='none'">
+            </div>
+            <p style="font-size:0.8rem; color:#aaa; margin-top:8px;">https://yb677.github.io/mon-app/</p>
+        </div>
     </div>
-</div>
 
     <!-- Écran Succès -->
     <div id="success-screen" class="system-screen">
-        <img src="icon-192.png" alt="ADLIL"
-             style="width:100px; height:100px; border-radius:22px;
-                    box-shadow:0 4px 15px rgba(0,0,0,0.15); margin-bottom:16px;"
-             onerror="this.style.display='none'">
+        <img src="icon-192.png" alt="ADLIL" style="width:100px; height:100px; border-radius:22px;
+                    box-shadow:0 4px 15px rgba(0,0,0,0.15); margin-bottom:16px;" onerror="this.style.display='none'">
         <h1 style="direction:rtl; font-size:1.4rem; margin-bottom: 30px;">مرحبا بك في تطبيق أدليل</h1>
         <h2 style="color: #28a745; font-size: 1.3rem;">✓ تم التثبيت بنجاح</h2>
         <p style="direction: rtl; font-size: 1.15rem; line-height: 2; padding: 0 10px;">
@@ -193,10 +203,94 @@
         <div class="nav-item" onclick="showView('welcome')">🏠 الرئيسية</div>
         <div class="nav-item" onclick="showView('app')">📝 معلوماتي</div>
         <div class="nav-item" onclick="showView('qr')">🖼️ رمز QR</div>
-        <div id="nav-version" style="position:absolute; bottom:16px; width:100%; text-align:center; font-size:0.75rem; color:#bbb;"></div>
+        <div class="nav-item" onclick="showView('localisation')">📍 موقع</div>
+        <div id="nav-version"
+            style="position:absolute; bottom:16px; width:100%; text-align:center; font-size:0.75rem; color:#bbb;"></div>
     </nav>
 
     <div class="app-container" id="mainApp">
+        <!-- VUE LOCALISATION -->
+        <div id="view-localisation" class="view">
+
+            <h2 style="text-align:center;margin:-45px 0 10px;height:45px;line-height:45px;font-size:1.3rem;">موقع</h2>
+
+            <div id="ligneMoi" style="display:flex;align-items:stretch;direction:rtl;
+                margin:10px 0;border:1px solid #ccc;border-radius:8px;overflow:hidden;">
+
+<div style="flex:1;padding:8px;text-align:center;border-left:1px solid #ccc;">
+    <div id="zoneInscription" style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;">
+        <input id="champNom" type="text" placeholder="الاسم" style="padding:6px;width:90px;margin:0;">
+        <button type="button" onclick="sInscrire()">تسجيل</button>
+        <a href="#" onclick="recuperer();return false;"
+           style="flex-basis:100%;font-size:0.8rem;">استرجاع حسابي</a>
+    </div>
+    <div id="zoneNom" style="display:none;">
+        <small>الاسم</small><br><b id="nomMoi"></b>
+        <small id="telMoi" dir="ltr" style="color:#757575;"></small>
+    </div>
+</div>
+
+                <div style="flex:1;padding:8px;text-align:center;border-left:1px solid #ccc;">
+                    <small>الرمز</small><br>
+                    <b id="codeMoi" dir="ltr" style="font-size:1.2rem;letter-spacing:2px;color:#007bff;">—</b>
+                </div>
+
+                <div style="flex:1;padding:8px;text-align:center;">
+                    <label style="cursor:pointer;">
+                        <input type="checkbox" id="casePartage" disabled onchange="basculerPartage(this.checked)"
+                           style="width:20px;height:20px;margin:0 0 0 6px;padding:0;vertical-align:middle;accent-color:#007bff;">
+                        إظهار موقعي للآخرين
+                    </label><br>
+                    <small id="etatPartage"></small>
+                </div>
+            </div>
+
+            <div id="zoneVerif" style="display:none;direction:rtl;margin:10px 0;border:1px solid #ccc;
+                border-radius:8px;padding:10px;text-align:center;">
+                <div>أرسل هذا الرمز عبر واتساب إلى الرقم <b id="numWa" dir="ltr"></b></div>
+                <div id="codeVerif" dir="ltr"
+                    style="font-size:1.6rem;letter-spacing:4px;font-weight:bold;margin:8px 0;color:#007bff;"></div>
+                <a id="lienWa" target="_blank" rel="noopener" style="display:inline-block;padding:8px 14px;background:#25d366;color:#fff;
+                    border-radius:8px;text-decoration:none;">فتح واتساب</a>
+                <div id="etatVerif" style="margin-top:8px;"></div>
+                <button type="button" onclick="annulerVerif()" style="margin-top:6px;">إلغاء</button>
+            </div>
+
+            <div id="zoneSuivi" style="direction:rtl;margin:10px 0;
+                border:1px solid #ccc;border-radius:8px;padding:10px;">
+
+                <div style="display:flex;gap:6px;">
+                    <input id="champCode" type="text" inputmode="numeric" maxlength="6" placeholder="أدخل رمز شخص تريد تتبعه"
+                        dir="ltr" style="flex:1;padding:6px;margin:0;">
+                    <button type="button" onclick="demanderSuivi()" title="متابعة" aria-label="متابعة"
+                        style="flex:none;display:inline-flex;align-items:center;justify-content:center;
+                        padding:6px 12px;font-size:22px;line-height:1;cursor:pointer;
+                        border:1px solid #007bff;border-radius:8px;background:#e8f0fe;">📍
+                    </button>
+                </div>
+
+                <div id="listeSuivis"></div>
+
+                <hr style="margin:10px 0;">
+
+                <div style="text-align:right;">
+                    <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;">
+                        <input type="checkbox" id="caseTous" onchange="basculerAccepterTous(this.checked)"
+                            style="width:22px;height:22px;flex:none;margin:0;padding:0;accent-color:#007bff;">
+                        <span style="text-align:right;">موافقتي التلقائية لكل من يطلب تتبعي</span>
+                    </label>
+                </div>
+
+                <div id="listeDemandes" style="margin-top:8px;"></div>
+            </div>
+
+            <div id="googleMap" style="
+                width:100%;
+                height:70vh;
+                border-radius:10px;
+            "></div>
+        </div>
+
         <!-- VUE ACCUEIL -->
         <div id="view-welcome" class="view active">
             <p id="welcomeUser" style="margin-top:0; padding-top:0;">مرحباً</p>
@@ -213,168 +307,179 @@
             <div id="feed-container"></div>
         </div>
 
-<!-- VUE FORMULAIRE -->
-<div id="view-app" class="view">
-    <h2>معلوماتي</h2>
-    <form id="userForm">
+        <!-- VUE FORMULAIRE -->
+        <div id="view-app" class="view">
+            <h2>معلوماتي</h2>
+            <form id="userForm">
 
-        <fieldset>
-            <legend>الهوية</legend>
+                <fieldset>
+                    <legend>الهوية</legend>
 
-            <!-- اللقب + الاسم -->
-            <div class="field-row">
-                <div class="field-group">
-                    <label for="f_nom">اللقب</label>
-                    <input type="text" id="f_nom" placeholder="اللقب" required>
+                    <!-- اللقب + الاسم -->
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="f_nom">اللقب</label>
+                            <input type="text" id="f_nom" placeholder="اللقب" required>
+                        </div>
+                        <div class="field-group">
+                            <label for="f_prenom">الاسم</label>
+                            <input type="text" id="f_prenom" placeholder="الاسم" required>
+                        </div>
+                    </div>
+
+                    <!-- الأب + الجد -->
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="f_pere">اسم الأب</label>
+                            <input type="text" id="f_pere" placeholder="اسم الأب">
+                        </div>
+                        <div class="field-group">
+                            <label for="f_grandpere">اسم الجد</label>
+                            <input type="text" id="f_grandpere" placeholder="اسم الجد">
+                        </div>
+                    </div>
+
+                    <!-- لقب الأم + اسم الأم -->
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="f_mereNom">لقب الأم</label>
+                            <input type="text" id="f_mereNom" placeholder="لقب الأم">
+                        </div>
+                        <div class="field-group">
+                            <label for="f_merePrenom">اسم الأم</label>
+                            <input type="text" id="f_merePrenom" placeholder="اسم الأم">
+                        </div>
+                    </div>
+
+                    <!-- تاريخ الميلاد + فصيلة الدم -->
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label for="f_datenaissance">تاريخ الميلاد</label>
+                            <input type="date" id="f_datenaissance">
+                        </div>
+                        <div class="field-group">
+                            <label for="f_groupesanguin">فصيلة الدم</label>
+                            <select id="f_groupesanguin">
+                                <option value="">-- اختر --</option>
+                                <option>A+</option>
+                                <option>A-</option>
+                                <option>B+</option>
+                                <option>B-</option>
+                                <option>AB+</option>
+                                <option>AB-</option>
+                                <option>O+</option>
+                                <option>O-</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- رقم هاتف الواتساب -->
+                    <div class="field-full">
+                        <label for="f_telephone">رقم هاتف الواتساب</label>
+                        <input type="tel" id="f_telephone" placeholder="رقم هاتف الواتساب" dir="ltr" required>
+                    </div>
+                </fieldset>
+
+                <div id="famille-zone"></div>
+
+                <button type="button" class="action-btn" id="btnAddConjoint" onclick="addConjoint()">+ إضافة
+                    زوجة</button>
+
+                <fieldset>
+                    <legend>الوضعية</legend>
+
+                    <div class="field-full">
+                        <label for="f_familleAlger">تواجد العائلة بالعاصمة</label>
+                        <select id="f_familleAlger">
+                            <option value="">-- اختر --</option>
+                            <option value="oui">نعم</option>
+                            <option value="non">لا</option>
+                        </select>
+                    </div>
+
+                    <div class="field-full">
+                        <label for="f_niveauInstruction">المستوى الدراسي</label>
+                        <select id="f_niveauInstruction">
+                            <option value="">-- اختر --</option>
+                            <option>ابتدائي</option>
+                            <option>إعدادي</option>
+                            <option>ثانوي</option>
+                            <option>جامعي</option>
+                            <option>خريج</option>
+                        </select>
+                    </div>
+
+                    <div class="field-full">
+                        <label for="f_profession">المهنة</label>
+                        <select id="f_profession">
+                            <option value="">-- اختر --</option>
+                            <option>مسير</option>
+                            <option>طالب</option>
+                            <option>موظف حكومي</option>
+                            <option>عامل</option>
+                            <option>ممارس حر</option>
+                            <option>متقاعد</option>
+                        </select>
+                    </div>
+
+                    <div class="field-full">
+                        <label for="f_adresseResidence">عنوان الإقامة</label>
+                        <input type="text" id="f_adresseResidence" placeholder="عنوان الإقامة">
+                    </div>
+
+                    <div class="field-full">
+                        <label for="f_mokataa">المقاطعة</label>
+                        <select id="f_mokataa" required>
+                            <option value="">-- اختر --</option>
+                            <option>الجزائر وسط</option>
+                            <option>بلكور</option>
+                            <option>الحراش</option>
+                            <option>بن رضوان</option>
+                            <option>الحميز</option>
+                            <option>خارج العاصمة</option>
+                        </select>
+                    </div>
+
+                    <div class="field-full">
+                        <label for="f_adresseActivite">عنوان العمل</label>
+                        <input type="text" id="f_adresseActivite" placeholder="عنوان العمل">
+                    </div>
+
+                    <div class="field-full">
+                        <label for="f_maitrise">المهارات</label>
+                        <input type="text" id="f_maitrise" placeholder="المهارات">
+                    </div>
+
+                    <div class="field-full">
+                        <label for="f_offres">خدمات للعرض</label>
+                        <input type="text" id="f_offres" placeholder="خدمات للعرض">
+                    </div>
+                </fieldset>
+
+                <!-- موافقة RGPD -->
+                <div
+                    style="direction:rtl; text-align:right; background:#f8f9fa; border:1px solid #dee2e6; border-radius:10px; padding:14px; margin-bottom:14px;">
+                    <label
+                        style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; font-size:0.92rem; line-height:1.7; color:#333;">
+                        <input type="checkbox" id="consentCheck"
+                            onchange="const btn=document.getElementById('btnSave'); btn.disabled=!this.checked; btn.style.opacity=this.checked?'1':'0.5';"
+                            style="margin-top:4px; width:18px; height:18px; flex-shrink:0; cursor:pointer; accent-color:#007bff;">
+                        <span>أوافق على استعمال معلوماتي من طرف التنسيقية حصريا ووفقا للقواعد المتعلقة بـ القانون 18-07
+                            الخاص بحماية البيانات ذات الطابع الشخصي.</span>
+                    </label>
                 </div>
-                <div class="field-group">
-                    <label for="f_prenom">الاسم</label>
-                    <input type="text" id="f_prenom" placeholder="الاسم" required>
-                </div>
-            </div>
 
-            <!-- الأب + الجد -->
-            <div class="field-row">
-                <div class="field-group">
-                    <label for="f_pere">اسم الأب</label>
-                    <input type="text" id="f_pere" placeholder="اسم الأب">
-                </div>
-                <div class="field-group">
-                    <label for="f_grandpere">اسم الجد</label>
-                    <input type="text" id="f_grandpere" placeholder="اسم الجد">
-                </div>
-            </div>
-
-            <!-- لقب الأم + اسم الأم -->
-            <div class="field-row">
-                <div class="field-group">
-                    <label for="f_mereNom">لقب الأم</label>
-                    <input type="text" id="f_mereNom" placeholder="لقب الأم">
-                </div>
-                <div class="field-group">
-                    <label for="f_merePrenom">اسم الأم</label>
-                    <input type="text" id="f_merePrenom" placeholder="اسم الأم">
-                </div>
-            </div>
-
-            <!-- تاريخ الميلاد + فصيلة الدم -->
-            <div class="field-row">
-                <div class="field-group">
-                    <label for="f_datenaissance">تاريخ الميلاد</label>
-                    <input type="date" id="f_datenaissance">
-                </div>
-                <div class="field-group">
-                    <label for="f_groupesanguin">فصيلة الدم</label>
-                    <select id="f_groupesanguin">
-                        <option value="">-- اختر --</option>
-                        <option>A+</option><option>A-</option>
-                        <option>B+</option><option>B-</option>
-                        <option>AB+</option><option>AB-</option>
-                        <option>O+</option><option>O-</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- رقم هاتف الواتساب -->
-            <div class="field-full">
-                <label for="f_telephone">رقم هاتف الواتساب</label>
-                <input type="tel" id="f_telephone" placeholder="رقم هاتف الواتساب" dir="ltr" required>
-            </div>
-        </fieldset>
-
-        <div id="famille-zone"></div>
-
-        <button type="button" class="action-btn" id="btnAddConjoint" onclick="addConjoint()">+ إضافة زوجة</button>
-
-        <fieldset>
-            <legend>الوضعية</legend>
-
-            <div class="field-full">
-                <label for="f_familleAlger">تواجد العائلة بالعاصمة</label>
-                <select id="f_familleAlger">
-                    <option value="">-- اختر --</option>
-                    <option value="oui">نعم</option>
-                    <option value="non">لا</option>
-                </select>
-            </div>
-
-            <div class="field-full">
-                <label for="f_niveauInstruction">المستوى الدراسي</label>
-                <select id="f_niveauInstruction">
-                    <option value="">-- اختر --</option>
-                    <option>ابتدائي</option>
-                    <option>إعدادي</option>
-                    <option>ثانوي</option>
-                    <option>جامعي</option>
-                    <option>خريج</option>
-                </select>
-            </div>
-
-            <div class="field-full">
-                <label for="f_profession">المهنة</label>
-                <select id="f_profession">
-                    <option value="">-- اختر --</option>
-                    <option>مسير</option>
-                    <option>طالب</option>
-                    <option>موظف حكومي</option>
-                    <option>عامل</option>
-                    <option>ممارس حر</option>
-                    <option>متقاعد</option>
-                </select>
-            </div>
-
-            <div class="field-full">
-                <label for="f_adresseResidence">عنوان الإقامة</label>
-                <input type="text" id="f_adresseResidence" placeholder="عنوان الإقامة">
-            </div>
-
-            <div class="field-full">
-                <label for="f_mokataa">المقاطعة</label>
-                <select id="f_mokataa" required>
-                    <option value="">-- اختر --</option>
-                    <option>الجزائر وسط</option>
-                    <option>بلكور</option>
-                    <option>الحراش</option>
-                    <option>بن رضوان</option>
-                    <option>الحميز</option>
-                    <option>خارج العاصمة</option>
-                </select>
-            </div>
-
-            <div class="field-full">
-                <label for="f_adresseActivite">عنوان العمل</label>
-                <input type="text" id="f_adresseActivite" placeholder="عنوان العمل">
-            </div>
-
-            <div class="field-full">
-                <label for="f_maitrise">المهارات</label>
-                <input type="text" id="f_maitrise" placeholder="المهارات">
-            </div>
-
-            <div class="field-full">
-                <label for="f_offres">خدمات للعرض</label>
-                <input type="text" id="f_offres" placeholder="خدمات للعرض">
-            </div>
-        </fieldset>
-
-        <!-- موافقة RGPD -->
-        <div style="direction:rtl; text-align:right; background:#f8f9fa; border:1px solid #dee2e6; border-radius:10px; padding:14px; margin-bottom:14px;">
-            <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; font-size:0.92rem; line-height:1.7; color:#333;">
-                <input type="checkbox" id="consentCheck" onchange="const btn=document.getElementById('btnSave'); btn.disabled=!this.checked; btn.style.opacity=this.checked?'1':'0.5';"
-                    style="margin-top:4px; width:18px; height:18px; flex-shrink:0; cursor:pointer; accent-color:#007bff;">
-                <span>أوافق على استعمال معلوماتي من طرف التنسيقية حصريا ووفقا للقواعد المتعلقة بـ القانون 18-07 الخاص بحماية البيانات ذات الطابع الشخصي.</span>
-            </label>
+                <button type="submit" id="btnSave" class="action-btn" disabled
+                    style="opacity:0.5; transition: opacity 0.3s;">حفظ البيانات</button>
+            </form>
+            <p id="statusMsg" class="status"></p>
         </div>
-
-        <button type="submit" id="btnSave" class="action-btn" disabled style="opacity:0.5; transition: opacity 0.3s;">حفظ البيانات</button>
-    </form>
-    <p id="statusMsg" class="status"></p>
-</div>
 
         <!-- VUE QR CODE -->
         <div id="view-qr" class="view">
             <div id="qrcode-container"></div>
-            <button class="action-btn" onclick="generateQR()" style="margin-top:8px; margin-bottom:16px; background:#6c757d; padding:8px;">🔄 تحيين</button>
+            <button class="action-btn" onclick="generateQR()"
+                style="margin-top:8px; margin-bottom:16px; background:#6c757d; padding:8px;">🔄 تحيين</button>
 
             <!-- قائمة المرافقين -->
             <div id="famille-qr-zone" style="direction:rtl; text-align:right;">
@@ -397,20 +502,22 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
 
     <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCOC38yLL-m9Zzd1k8fkjkrrinsX7ZEokg",
-      authDomain: "adlil-fb5df.firebaseapp.com",
-      projectId: "adlil-fb5df",
-      storageBucket: "adlil-fb5df.firebasestorage.app",
-      messagingSenderId: "178895455937",
-      appId: "1:178895455937:web:90d03218b3f78e0d67f640"
-    };
-      firebase.initializeApp(firebaseConfig);
-      const db = firebase.firestore();
-      const messaging = firebase.messaging();
+        const firebaseConfig = {
+            apiKey: "AIzaSyCOC38yLL-m9Zzd1k8fkjkrrinsX7ZEokg",
+            authDomain: "adlil-fb5df.firebaseapp.com",
+            projectId: "adlil-fb5df",
+            storageBucket: "adlil-fb5df.firebasestorage.app",
+            messagingSenderId: "178895455937",
+            appId: "1:178895455937:web:90d03218b3f78e0d67f640"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const messaging = firebase.messaging();
     </script>
 
     <script src="qrcode.min.js"></script>
     <script src="script.js"></script>
+    <script src="localisation.js"></script>
 </body>
+
 </html>
