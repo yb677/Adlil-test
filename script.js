@@ -42,6 +42,16 @@ function getClientId() {
     return clientId;
 }
 
+function getClientId() {
+    // Si crypto.randomUUID est disponible (sur PC / HTTPS), on l'utilise
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+    }
+    
+    // Solution de secours (Fallback) pour le mobile en HTTP local
+    return 'id-' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
 const CLIENT_ID = getClientId();
 
 console.log('🆔 Client ID :', CLIENT_ID);
