@@ -92,7 +92,7 @@ async function insAfficherCompte() {
   const verifie = !!d.tel;
   document.getElementById('insCodeCompte').textContent = d.code;
   document.getElementById('insNomEdit').value = d.nom;
-  document.getElementById('insTelCompte').textContent = verifie ? '+' + d.tel + ' ✓' : 'حساب بدون واتساب';
+  document.getElementById('insTelCompte').textContent = verifie ? '+' + d.tel + ' ✓' : '- - -';
   document.getElementById('insBlocRattacher').style.display = verifie ? 'none' : 'block';
   if (typeof chargerMoi === 'function') chargerMoi();
   insAppliquerTelephone();

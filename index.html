@@ -578,7 +578,7 @@
                 style="position:absolute;top:8px;left:8px;border:none;background:none;font-size:20px;cursor:pointer;">✕</button>
 
             <!-- Mon compte -->
-            <div id="ins-compte" style="display:none;">
+            <!-- <div id="ins-compte" style="display:none;">
                 <small>الرمز</small>
                 <div id="insCodeCompte" dir="ltr"
                     style="font-size:1.8rem;letter-spacing:3px;font-weight:bold;color:#007bff;margin-bottom:12px;">
@@ -600,7 +600,31 @@
                     <button type="button" onclick="insRattacher()" style="width:100%;padding:12px;border:none;border-radius:10px;background:#25d366;
                        color:#fff;font-size:15px;cursor:pointer;">ربط رقم واتساب</button>
                 </div>
-            </div>
+            </div> -->
+
+            <div id="ins-compte" style="display:none;">
+  <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;">
+    <small>رمز</small>
+    <span id="insCodeCompte" dir="ltr"
+          style="font-size:1.8rem;letter-spacing:3px;font-weight:bold;color:#007bff;"></span>
+  </div>
+
+  <small>الاسم</small>
+  <div style="display:flex;gap:6px;margin:4px 0 12px;">
+    <input id="insNomEdit" type="text" maxlength="40" style="flex:1;min-width:0;margin:0;padding:8px;">
+    <button id="insBtnNom" type="button" onclick="insEnregistrerNom()"
+            style="flex:none;padding:0 14px;border:none;border-radius:8px;background:#007bff;
+                   color:#fff;cursor:pointer;">حفظ</button>
+  </div>
+
+  <div id="insTelCompte" dir="ltr" style="color:#555;margin-bottom:12px;"></div>
+
+  <div id="insBlocRattacher" style="display:none;">
+    <button type="button" onclick="insRattacher()"
+            style="width:100%;padding:12px;border:none;border-radius:10px;background:#25d366;
+                   color:#fff;font-size:15px;cursor:pointer;">اربط رمزك بالواتساب للحفاظ عليه</button>
+  </div>
+</div>
 
             <!-- Vérification WhatsApp -->
             <div id="ins-verif" style="display:none;">

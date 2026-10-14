@@ -68,11 +68,26 @@ fieldset input, fieldset select { width: 100%; margin-bottom: 10px; }
 #view-welcome.active > * { flex: none; }
 #view-welcome.active > #feed-container { flex: 1 1 0; min-height: 0; overflow-y: auto; }
 #feed-container > * { flex: none; }
+/*
 body { align-items: flex-start; }
 .app-container {
     height: 100%;
     padding-top: calc(55px + env(safe-area-inset-top, 0px));
     padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
 }
+*/
 .burger-btn { top: calc(15px + env(safe-area-inset-top, 0px)); }
 .nav-menu { padding-top: calc(80px + env(safe-area-inset-top, 0px)); }
+
+html, body { height: 100%; overflow: hidden; }
+body { display: block; }
+
+.app-container {
+    position: fixed;
+    top: 0; bottom: 0; left: 0; right: 0;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    padding: calc(55px + env(safe-area-inset-top, 0px)) 20px calc(20px + env(safe-area-inset-bottom, 0px));
+}
