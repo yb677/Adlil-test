@@ -64,3 +64,7 @@ fieldset input, fieldset select { width: 100%; margin-bottom: 10px; }
 .pub-type   { font-size:11px; text-transform:uppercase; color:#007bff; font-weight:bold; margin-bottom:4px; }
 .pub-contenu{ font-size:15px; color:#333; line-height:1.5; }
 .pub-meta   { font-size:11px; color:#999; margin-top:6px; text-align:right; }
+#view-welcome.active { display: flex; flex-direction: column; height: 100%; }
+#view-welcome.active > * { flex: none; }
+#view-welcome.active > #feed-container { flex: 1 1 0; min-height: 0; overflow-y: auto; }
+#feed-container > * { flex: none; }

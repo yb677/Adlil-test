@@ -19,6 +19,7 @@
             z-index: 0;
             isolation: isolate;
         }
+
         /* Grille deux colonnes pour les paires de champs */
         .field-row {
             display: grid;
@@ -202,8 +203,25 @@
     <nav class="nav-menu" id="sideMenu">
         <div class="nav-item" onclick="showView('welcome')">🏠 الرئيسية</div>
         <div class="nav-item" onclick="showView('app')">📝 معلوماتي</div>
-        <div class="nav-item" onclick="showView('qr')">🖼️ رمز QR</div>
-        <div class="nav-item" onclick="showView('localisation')">📍 موقع</div>
+        <div class="nav-item" onclick="showView('qr')">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="#333" fill-rule="evenodd"
+                style="vertical-align:middle;margin-inline-end:4px;">
+                <path d="M3 3h8v8H3V3zm2 2v4h4V5H5zM13 3h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5z" />
+                <rect x="13" y="13" width="3" height="3" />
+                <rect x="18" y="13" width="3" height="3" />
+                <rect x="15.5" y="16.5" width="3" height="3" />
+                <rect x="13" y="19" width="3" height="2" />
+                <rect x="18" y="19" width="3" height="2" />
+            </svg> رمز QR
+        </div>
+
+        <div class="nav-item" onclick="showView('localisation')">
+            <svg width="26" height="26" viewBox="0 0 24 24" style="vertical-align:middle;margin-inline-end:4px;">
+                <path fill="#ea4335"
+                    d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z" />
+            </svg> موقع
+        </div>
+
         <div id="nav-version"
             style="position:absolute; bottom:16px; width:100%; text-align:center; font-size:0.75rem; color:#bbb;"></div>
     </nav>
@@ -214,59 +232,55 @@
 
             <h2 style="text-align:center;margin:-45px 0 10px;height:45px;line-height:45px;font-size:1.3rem;">موقع</h2>
 
-            <div id="ligneMoi" style="display:flex;align-items:stretch;direction:rtl;
-                margin:10px 0;border:1px solid #ccc;border-radius:8px;overflow:hidden;">
+<div id="ligneMoi" style="display:flex;align-items:stretch;direction:rtl;
+     margin:10px 0;border:1px solid #ccc;border-radius:8px;overflow:hidden;">
 
-<div style="flex:1;padding:8px;text-align:center;border-left:1px solid #ccc;">
-    <div id="zoneInscription" style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;">
-        <input id="champNom" type="text" placeholder="الاسم" style="padding:6px;width:90px;margin:0;">
-        <button type="button" onclick="sInscrire()">تسجيل</button>
-        <a href="#" onclick="recuperer();return false;"
-           style="flex-basis:100%;font-size:0.8rem;">استرجاع حسابي</a>
-    </div>
-    <div id="zoneNom" style="display:none;">
-        <small>الاسم</small><br><b id="nomMoi"></b>
+    <div onclick="insOuvrir()" title="حسابي"
+         style="flex:1;padding:8px;text-align:center;border-left:1px solid #ccc;cursor:pointer;">
+        <small>الاسم</small><br>
+        <b id="nomMoi">—</b><br>
         <small id="telMoi" dir="ltr" style="color:#757575;"></small>
+    </div>
+
+    <div style="flex:1;padding:8px;text-align:center;border-left:1px solid #ccc;">
+        <small>الرمز</small><br>
+        <b id="codeMoi" dir="ltr" style="font-size:1.2rem;letter-spacing:2px;color:#007bff;">—</b>
+    </div>
+
+    <div style="flex:1;padding:8px;text-align:center;">
+        <label style="cursor:pointer;">
+            <input type="checkbox" id="casePartage" disabled onchange="basculerPartage(this.checked)"
+                   style="width:20px;height:20px;margin:0 0 0 6px;padding:0;vertical-align:middle;accent-color:#007bff;">
+            مشاركة موقعي
+        </label><br>
+        <small id="etatPartage"></small>
     </div>
 </div>
 
-                <div style="flex:1;padding:8px;text-align:center;border-left:1px solid #ccc;">
-                    <small>الرمز</small><br>
-                    <b id="codeMoi" dir="ltr" style="font-size:1.2rem;letter-spacing:2px;color:#007bff;">—</b>
-                </div>
 
-                <div style="flex:1;padding:8px;text-align:center;">
-                    <label style="cursor:pointer;">
-                        <input type="checkbox" id="casePartage" disabled onchange="basculerPartage(this.checked)"
-                           style="width:20px;height:20px;margin:0 0 0 6px;padding:0;vertical-align:middle;accent-color:#007bff;">
-                        إظهار موقعي للآخرين
-                    </label><br>
-                    <small id="etatPartage"></small>
-                </div>
-            </div>
-
-            <div id="zoneVerif" style="display:none;direction:rtl;margin:10px 0;border:1px solid #ccc;
-                border-radius:8px;padding:10px;text-align:center;">
-                <div>أرسل هذا الرمز عبر واتساب إلى الرقم <b id="numWa" dir="ltr"></b></div>
-                <div id="codeVerif" dir="ltr"
-                    style="font-size:1.6rem;letter-spacing:4px;font-weight:bold;margin:8px 0;color:#007bff;"></div>
-                <a id="lienWa" target="_blank" rel="noopener" style="display:inline-block;padding:8px 14px;background:#25d366;color:#fff;
-                    border-radius:8px;text-decoration:none;">فتح واتساب</a>
-                <div id="etatVerif" style="margin-top:8px;"></div>
-                <button type="button" onclick="annulerVerif()" style="margin-top:6px;">إلغاء</button>
-            </div>
 
             <div id="zoneSuivi" style="direction:rtl;margin:10px 0;
                 border:1px solid #ccc;border-radius:8px;padding:10px;">
 
                 <div style="display:flex;gap:6px;">
-                    <input id="champCode" type="text" inputmode="numeric" maxlength="6" placeholder="أدخل رمز شخص تريد تتبعه"
-                        dir="ltr" style="flex:1;padding:6px;margin:0;">
-                    <button type="button" onclick="demanderSuivi()" title="متابعة" aria-label="متابعة"
-                        style="flex:none;display:inline-flex;align-items:center;justify-content:center;
-                        padding:6px 12px;font-size:22px;line-height:1;cursor:pointer;
-                        border:1px solid #007bff;border-radius:8px;background:#e8f0fe;">📍
+                    <input id="champCode" type="text" inputmode="numeric" maxlength="6"
+                        placeholder="أدخل رمز شخص تريد تتبعه" dir="ltr" style="flex:1;padding:6px;margin:0;">
+
+                    <button type="button" onclick="demanderSuivi()" title="متابعة" aria-label="متابعة" style="flex:none;display:inline-flex;align-items:center;justify-content:center;
+               width:46px;border:1px solid #1a73e8;border-radius:8px;background:#fff;cursor:pointer;">
+                        <svg width="34" height="34" viewBox="0 0 48 48">
+                            <g transform="translate(7,-1) scale(2)">
+                                <path fill="#ea4335"
+                                    d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
+                                <circle cx="12" cy="9" r="2.5" fill="#fff" />
+                            </g>
+                            <circle cx="17" cy="28" r="14" fill="#fff" fill-opacity=".7" stroke="#1a73e8"
+                                stroke-width="4" />
+                            <line x1="29.7" y1="33.9" x2="43.3" y2="40.3" stroke="#1a73e8" stroke-width="6"
+                                stroke-linecap="round" />
+                        </svg>
                     </button>
+
                 </div>
 
                 <div id="listeSuivis"></div>
@@ -293,19 +307,96 @@
 
         <!-- VUE ACCUEIL -->
         <div id="view-welcome" class="view active">
-            <p id="welcomeUser" style="margin-top:0; padding-top:0;">مرحباً</p>
-            <button onclick="refreshFeed()" style="
-                background: none;
-                border: 1px solid #007bff;
-                color: #007bff;
-                border-radius: 20px;
-                padding: 6px 16px;
-                font-size: 13px;
-                cursor: pointer;
-                margin-bottom: 10px;
-            ">🔄 تحيين</button>
+            <div style="display:flex;flex-direction:row-reverse;align-items:center;gap:10px;
+                margin:-55px 0 10px;">
+                <img src="icon-192.png" alt="ADLIL" width="40" height="40" onclick="ouvrirAdmin()"
+                    style="border-radius:10px;display:block;cursor:pointer;" onerror="this.style.display='none'">
+                <button onclick="refreshFeed()" style="
+                    background: none;
+                    border: 1px solid #007bff;
+                    color: #007bff;
+                    border-radius: 20px;
+                    padding: 6px 16px;
+                    font-size: 13px;
+                    cursor: pointer;
+                ">🔄 تحيين</button>
+            </div>
+
+            <button id="btnCompte" onclick="insOuvrir()" style="
+    background: none;
+    border: 1px solid #007bff;
+    color: #007bff;
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+">➕ تسجيل</button>
+
+            <p id="welcomeUser" style="margin:0 0 10px;">مرحباً</p>
             <div id="feed-container"></div>
+
+
+            <div id="zoneAdmin" style="display:none;margin:0 -20px -20px;padding:8px 20px;
+     background:#fff;border-top:1px solid #ddd;direction:ltr;">
+
+                <div id="panneauEmoji" style="display:none;grid-template-columns:repeat(8,1fr);gap:2px;
+         max-height:150px;overflow-y:auto;margin-bottom:8px;font-size:24px;"></div>
+
+                <div id="pjBarre" style="display:none;align-items:center;justify-content:space-between;gap:8px;
+         margin-bottom:6px;padding:4px 10px;background:#f0f2f5;border-radius:10px;font-size:14px;">
+                    <span id="pjNom" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+                    <button type="button" onclick="retirerPJ()"
+                        style="border:none;background:none;font-size:16px;cursor:pointer;">✕</button>
+                </div>
+
+                <div style="display:flex;align-items:flex-end;gap:6px;">
+                    <div style="flex:1;display:flex;align-items:flex-end;gap:2px;background:#f0f2f5;
+                    border-radius:20px;padding:2px 6px;">
+
+                        <button type="button" onclick="basculerEmojis()" aria-label="emoji"
+                            style="flex:none;height:32px;border:none;background:none;padding:0 3px;cursor:pointer;">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#54656f"
+                                stroke-width="1.8" stroke-linecap="round">
+                                <circle cx="12" cy="12" r="9.5" />
+                                <path d="M8 14.5c1 1.5 2.4 2.2 4 2.2s3-.7 4-2.2" />
+                                <circle cx="9" cy="10" r=".8" fill="#54656f" />
+                                <circle cx="15" cy="10" r=".8" fill="#54656f" />
+                            </svg>
+                        </button>
+
+                        <textarea id="champAdmin" rows="1" dir="auto" placeholder="اكتب رسالة" oninput="ajusterChamp()"
+                            style="flex:1;min-width:0;border:none;outline:none;resize:none;background:transparent;
+                            box-sizing:border-box;height:32px;max-height:260px;margin:0;padding:6px 0;
+                            font-family:inherit;font-size:15px;line-height:20px;overflow-y:hidden;"></textarea>
+
+                        <button type="button" onclick="document.getElementById('champFichier').click()"
+                            aria-label="pièce jointe"
+                            style="flex:none;height:32px;border:none;background:none;padding:0 3px;cursor:pointer;">
+                            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#54656f"
+                                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <button type="button" id="btnEnvoiAdmin" onclick="envoyerAdmin()" aria-label="envoyer" style="flex:none;width:32px;height:32px;border:none;border-radius:50%;padding:0;
+               background:#007bff;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13" />
+                            <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                        </svg>
+                    </button>
+
+                </div>
+
+                <input type="file" id="champFichier" accept=".jpg,.jpeg,.png,.gif,.pdf" style="display:none"
+                    onchange="choisirPJ(this)">
+            </div>
+
         </div>
+
 
         <!-- VUE FORMULAIRE -->
         <div id="view-app" class="view">
@@ -497,8 +588,86 @@
         <div class="ios-arrow">↓</div>
     </div>
 
+<div id="ecranIns" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.45);
+     align-items:center;justify-content:center;padding:16px;direction:rtl;">
+  <div style="background:#fff;border-radius:14px;width:100%;max-width:380px;max-height:90vh;
+              overflow-y:auto;padding:18px;position:relative;text-align:center;box-sizing:border-box;">
+
+    <button type="button" onclick="insFermer()" aria-label="إغلاق"
+            style="position:absolute;top:8px;left:8px;border:none;background:none;font-size:20px;cursor:pointer;">✕</button>
+
+    <!-- Mon compte -->
+    <div id="ins-compte" style="display:none;">
+      <small>الرمز</small>
+      <div id="insCodeCompte" dir="ltr"
+           style="font-size:1.8rem;letter-spacing:3px;font-weight:bold;color:#007bff;margin-bottom:12px;"></div>
+
+      <small>الاسم</small>
+      <div style="display:flex;gap:6px;margin:4px 0 12px;">
+        <input id="insNomEdit" type="text" maxlength="40" style="flex:1;min-width:0;margin:0;padding:8px;">
+        <button id="insBtnNom" type="button" onclick="insEnregistrerNom()"
+                style="flex:none;padding:0 14px;border:none;border-radius:8px;background:#007bff;
+                       color:#fff;cursor:pointer;">حفظ</button>
+      </div>
+
+      <div id="insTelCompte" dir="ltr" style="color:#555;margin-bottom:12px;"></div>
+
+      <div id="insBlocRattacher" style="display:none;">
+        <small style="display:block;color:#c62828;margin-bottom:8px;">
+          إذا غيّرت هاتفك أو مسحت بيانات التطبيق ستفقد هذا الرمز ومتابعيك. اربط رقم واتساب للاحتفاظ به.
+        </small>
+        <button type="button" onclick="insRattacher()"
+                style="width:100%;padding:12px;border:none;border-radius:10px;background:#25d366;
+                       color:#fff;font-size:15px;cursor:pointer;">ربط رقم واتساب</button>
+      </div>
+    </div>
+
+    <!-- Vérification WhatsApp -->
+    <div id="ins-verif" style="display:none;">
+      <h3 style="margin:0 0 12px;">التحقق عبر واتساب</h3>
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;">
+        <span id="insCodeVerif" dir="ltr"
+              style="font-size:1.3rem;letter-spacing:2px;font-weight:bold;color:#007bff;"></span>
+        <a id="insLienWa" target="_blank" rel="noopener"
+           style="display:inline-block;padding:8px 12px;background:#25d366;color:#fff;
+                  border-radius:8px;text-decoration:none;font-size:0.9rem;">إرسال الرمز عبر واتساب</a>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px;">
+        <span id="insEtat"></span>
+        <button type="button" onclick="insAnnuler()">رجوع</button>
+      </div>
+    </div>
+
+    <!-- Numéro déjà lié à un autre compte : choix -->
+    <div id="ins-choisir" style="display:none;">
+      <h3 style="margin:0 0 10px;">هذا الرقم مرتبط بحساب موجود</h3>
+      <div style="background:#f0f2f5;border-radius:10px;padding:10px;margin-bottom:14px;">
+        <small>الحساب القديم</small>
+        <div id="insAncienNom" style="font-weight:bold;"></div>
+        <div id="insAncienCode" dir="ltr" style="letter-spacing:2px;color:#007bff;font-weight:bold;"></div>
+      </div>
+
+      <button type="button" onclick="insResoudre('recuperer')"
+              style="width:100%;padding:12px;border:none;border-radius:10px;background:#007bff;
+                     color:#fff;font-size:15px;cursor:pointer;">استرجاع الحساب القديم</button>
+      <small style="display:block;margin:4px 0 14px;color:#555;">يستعيد هاتفك رمز ومتابعي الحساب القديم</small>
+
+      <button type="button" onclick="insResoudre('garder')"
+              style="width:100%;padding:12px;border:1px solid #888;border-radius:10px;background:#fff;
+                     font-size:15px;cursor:pointer;">الاحتفاظ بحسابي الحالي</button>
+      <small style="display:block;margin-top:4px;color:#c62828;">الحساب القديم سيفقد رقمه ولن يمكن استرجاعه</small>
+    </div>
+
+    <!-- Échec / attente de création -->
+    <div id="ins-echec" style="display:none;">
+      <div id="insMsgEchec" style="margin:10px 0;"></div>
+      <button type="button" onclick="insOuvrir()">إعادة المحاولة</button>
+    </div>
+  </div>
+</div>
+
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <!--//yb script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script-->
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
 
     <script>
@@ -511,13 +680,16 @@
             appId: "1:178895455937:web:90d03218b3f78e0d67f640"
         };
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        //yb const db = firebase.firestore();
         const messaging = firebase.messaging();
     </script>
 
     <script src="qrcode.min.js"></script>
     <script src="script.js"></script>
-    <script src="localisation.js"></script>
+    <script src="scr_publier.js"></script>
+    <script src="scr_myinfo.js"></script>
+    <script src="scr_inscription.js"></script>
+    <script src="scr_localisation.js"></script>
 </body>
 
 </html>

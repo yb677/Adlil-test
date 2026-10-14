@@ -10,6 +10,14 @@ const iosArrow = document.getElementById('ios-arrow-help');
 const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 const isMobile = false; // /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+// Adresse du serveur : une seule pour toute l'application
+const EN_TEST_LOCAL = false;   // true : serveur sur ce PC / false : serveur en ligne
+const SERVER = EN_TEST_LOCAL ? 'http://localhost:3001' : 'https://dev-api.adlil.net';
+const NUMERO_WA = "213551105867";   // ← numéro WhatsApp du serveur, sans le « + »
+
+const PALETTE = ['#e53935', '#1e88e5', '#43a047', '#fb8c00', '#8e24aa', '#00acc1'];
+
 //yb
 // ============================================================
 // INDEXEDDB INIT
@@ -24,32 +32,13 @@ let idb;
 // ============================================================
 function getClientId() {
     let clientId = localStorage.getItem('adlil_client_id');
-
     if (!clientId) {
-// -- initial block
-//        clientId = crypto.randomUUID();
-// -- yb block
-        // Si crypto.randomUUID est disponible (sur PC / HTTPS), on l'utilise
-        if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-            clientId = crypto.randomUUID();
-        } else
-        // Solution de secours (Fallback) pour le mobile en HTTP local
-            clientId = 'id-' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-// -- block end
-            localStorage.setItem('adlil_client_id', clientId);
+        clientId = (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
+            ? crypto.randomUUID()
+            : 'id-' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        localStorage.setItem('adlil_client_id', clientId);
     }
-
     return clientId;
-}
-
-function getClientId() {
-    // Si crypto.randomUUID est disponible (sur PC / HTTPS), on l'utilise
-    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-        return crypto.randomUUID();
-    }
-    
-    // Solution de secours (Fallback) pour le mobile en HTTP local
-    return 'id-' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }
 
 const CLIENT_ID = getClientId();
@@ -69,41 +58,6 @@ function openIDB() {
         req.onsuccess = (e) => { idb = e.target.result; resolve(idb); };
         req.onerror = (e) => reject(e);
     });
-}
-
-// ============================================================
-// FIRESTORE SYNC
-// ============================================================
-async function syncPublications() {
-    try {
-        const snapshot = await db.collection('publications').orderBy('date', 'asc').get();
-
-        // Vider IndexedDB complètement avant de réécrire (supprime les docs effacés)
-        await new Promise((resolve, reject) => {
-            const tx = idb.transaction(STORE_NAME, 'readwrite');
-            const req = tx.objectStore(STORE_NAME).clear();
-            req.onsuccess = () => resolve();
-            req.onerror = () => reject(req.error);
-        });
-
-        if (snapshot.empty) { console.log('ℹ️ Aucune publication'); return; }
-
-        await new Promise((resolve, reject) => {
-            const tx = idb.transaction(STORE_NAME, 'readwrite');
-            const store = tx.objectStore(STORE_NAME);
-            snapshot.forEach(doc => {
-                store.put({ id: doc.id, ...doc.data(), date: doc.data().date.toDate().toISOString() });
-            });
-            tx.oncomplete = () => resolve();
-            tx.onerror = () => reject(tx.error);
-        });
-
-        localStorage.removeItem('adlil_read');
-        console.log(`✅ ${snapshot.size} publication(s) synchronisée(s)`);
-    } catch (err) {
-        console.warn('⚠️ Sync error:', err);
-        throw err;
-    }
 }
 
 // Écran installation mobile (l'app est affichée dans window.onload après init IDB)
@@ -167,12 +121,14 @@ function showView(viewId) {
             carte.invalidateSize();
         }
     }
+    
+    if (viewId === 'app' && typeof insAppliquerTelephone === 'function') insAppliquerTelephone();
 }
 
 let timerSuivi = null;
 
 async function api(chemin, corps) {
-  const r = await fetch(SERVEUR + chemin, {
+  const r = await fetch(SERVER + chemin, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id: localStorage.getItem('monId'), ...corps })
@@ -359,7 +315,7 @@ function generateQR(accompList) {
     const telephone = d.telephone || '';
 
     if (!nom && !prenom) {
-        container.innerHTML = `<p style="color:#999; text-align:center;">لا توجد بيانات. يرجى ملء معلوماتك أولاً.</p>`;
+        container.innerHTML = `<p style="color:#999; text-align:center;">لا توجد بيانات. يرجى ملء معلوماتك أولاً</p>`;
         return;
     }
 
@@ -728,56 +684,20 @@ window.onload = async () => {
 // DISPLAY FEED
 // ============================================================
 
-async function loadFeed() {
-    const container = document.getElementById('feed-container');
-    if (!container) return;
-    const tx = idb.transaction(STORE_NAME, 'readonly');
-    const store = tx.objectStore(STORE_NAME);
-    const index = store.index('date');
-    const publications = await new Promise(res => {
-        const req = index.getAll();
-        req.onsuccess = () => res(req.result);
-    });
-    if (publications.length === 0) {
-        container.innerHTML = `<p style="color:#999; text-align:center;">Aucune publication.</p>`;
-        return;
-    }
-    const readIds = JSON.parse(localStorage.getItem('adlil_read') || '[]');
-    let firstUnreadIndex = -1;
-    let html = '';
-    publications.forEach((pub, i) => {
-        const isRead = readIds.includes(pub.id);
-        if (!isRead && firstUnreadIndex === -1) firstUnreadIndex = i;
-        const dateStr = new Date(pub.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
-        html += `
-            <div class="pub-bubble ${isRead ? 'pub-read' : 'pub-unread'}" id="pub-${pub.id}" onclick="markRead('${pub.id}')">
-                <div class="pub-type">${pub.type}</div>
-                <div class="pub-contenu">${pub.contenu}</div>
-                <div class="pub-meta">${pub.auteur} · ${dateStr}</div>
-            </div>`;
-    });
-    container.innerHTML = html;
-    const allIds = publications.map(p => p.id);
-    localStorage.setItem('adlil_read', JSON.stringify(allIds));
-    if (firstUnreadIndex !== -1) {
-        const el = document.getElementById('pub-' + publications[firstUnreadIndex].id);
-        if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
-    }
-}
-
 async function refreshFeed() {
     const container = document.getElementById('feed-container');
     if (!container) return;
-    //    await loadFeed();
     if (!navigator.onLine) return;
+    if (document.getElementById('sync-indicator')) return;   // évite les doubles clics
+
     const indicator = document.createElement('div');
     indicator.id = 'sync-indicator';
     indicator.style.cssText = 'text-align:center;font-size:12px;color:#aaa;padding:4px;';
     indicator.textContent = '🔄 Mise à jour...';
     container.prepend(indicator);
+
     try {
-        //        await syncPublications();
-        //        await loadFeed();
+        await loadDevFeed();
     } catch (err) {
         console.warn('Sync failed:', err);
     } finally {
@@ -806,6 +726,29 @@ messaging.onMessage((payload) => {
     );
 });
 
+async function fcmEnregistrer() {
+    const token = localStorage.getItem('fcm_token');
+    if (!token) return;
+
+    // le compte se crée en silence au lancement : on lui laisse un peu de temps
+    for (let i = 0; i < 5 && !localStorage.getItem('monId'); i++) {
+        if (typeof insCreerCompte === 'function') await insCreerCompte();
+        if (!localStorage.getItem('monId')) await new Promise(r => setTimeout(r, 1500));
+    }
+    const id = localStorage.getItem('monId');
+    if (!id) return;
+
+    try {
+        const r = await fetch(SERVER + '/dev/enregistrer-appareil', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, clientId: CLIENT_ID, token })
+        });
+        const d = await r.json();
+        console.log('✅ Appareil enregistré :', d.success);
+    } catch (e) { console.error('❌ Enregistrement appareil :', e); }
+}
+
 async function testFCM() {
     try {
         const permission = await Notification.requestPermission();
@@ -823,26 +766,8 @@ async function testFCM() {
             serviceWorkerRegistration: registration
         });
 
-        console.log('✅ TOKEN FCM :', token);
-
-        console.log("AVANT FETCH");
-
-        const response = await fetch(
-            'https://dev-fcm.adlil.net/register',
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    clientId: CLIENT_ID,
-                    token: token
-                })
-            }
-        );
-
-        console.log("APRES FETCH", response.status);
-
-        const result = await response.json();
-        console.log('✅ Enregistrement serveur :', result);
+        localStorage.setItem('fcm_token', token);
+        await fcmEnregistrer();
 
     } catch (err) {
         console.error('❌ Erreur FCM :', err);
@@ -855,8 +780,6 @@ testFCM();
 // ============================================================
 // TEST IMAGES DEV
 // ============================================================
-
-const DEV_SERVER = 'https://dev-api.adlil.net';
 
 // ============================================================
 // TEST FEED PUBLICATIONS DEV
@@ -902,7 +825,7 @@ async function saveDevPublications(publications) {
         if (pub.type === "image" || pub.type === "pdf") {
 
             const response = await fetch(
-                `${DEV_SERVER}/dev/files/${pub.filename}`
+                `${SERVER}/dev/files/${pub.filename}`
             );
 
             if (!response.ok) {
@@ -997,7 +920,7 @@ async function downloadImageInBackground(pub) {
     try {
 
         const response = await fetch(
-            `${DEV_SERVER}/dev/files/${pub.filename}`
+            `${SERVER}/dev/files/${pub.filename}`
         );
 
         if (!response.ok) {
@@ -1061,7 +984,7 @@ async function openDevFile(pub) {
         );
 
         const response = await fetch(
-            `${DEV_SERVER}/dev/files/${pub.filename}`
+            `${SERVER}/dev/files/${pub.filename}`
         );
 
         if (!response.ok) {
@@ -1172,6 +1095,20 @@ function formatPubTime(dateString) {
     });
 }
 
+function majBienvenue() {
+  const feed = document.getElementById('feed-container');
+  const bienvenue = document.getElementById('welcomeUser');
+  if (!feed || !bienvenue) return;
+  bienvenue.style.display = feed.querySelector('.pub-bubble') ? 'none' : 'block';
+}
+
+const feedEl = document.getElementById('feed-container');
+if (feedEl) {
+  // se déclenche à chaque changement du contenu, quelle que soit la fonction qui le modifie
+  new MutationObserver(majBienvenue).observe(feedEl, { childList: true, subtree: true });
+  majBienvenue();
+}
+
 async function loadDevFeed() {
 
     const container = document.getElementById('feed-container');
@@ -1182,7 +1119,7 @@ async function loadDevFeed() {
 
         // 1. Récupérer uniquement les nouvelles publications
         const response = await fetch(
-            `${DEV_SERVER}/dev/publications?clientId=${CLIENT_ID}`
+            `${SERVER}/dev/publications?clientId=${CLIENT_ID}`
         );
 
         const data = await response.json();
@@ -1206,7 +1143,7 @@ async function loadDevFeed() {
                 ].id;
 
             await fetch(
-                `${DEV_SERVER}/dev/sync-confirm`,
+                `${SERVER}/dev/sync-confirm`,
                 {
                     method: "POST",
                     headers: {
@@ -1270,7 +1207,7 @@ async function loadDevFeed() {
             if (pub.type === 'image') {
 
                 const thumbnailUrl =
-                    `${DEV_SERVER}/dev/thumbnails/${pub.filename}`;
+                    `${SERVER}/dev/thumbnails/${pub.filename}`;
 
                 html += `
                     <div>
@@ -1290,7 +1227,7 @@ async function loadDevFeed() {
                     pub.filename.replace(/\.pdf$/i, '.jpg');
 
                 const thumbnailUrl =
-                    `${DEV_SERVER}/dev/thumbnails/${thumbnailName}`;
+                    `${SERVER}/dev/thumbnails/${thumbnailName}`;
 
                 html += `
                     <div
