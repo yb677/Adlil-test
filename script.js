@@ -14,6 +14,18 @@ const isMobile = false; // /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|O
 // Adresse du serveur : une seule pour toute l'application
 const EN_TEST_LOCAL = false;   // true : serveur sur ce PC / false : serveur en ligne
 const SERVER = EN_TEST_LOCAL ? 'http://localhost:3001' : 'https://dev-api.adlil.net';
+//const SERVER = EN_TEST_LOCAL ? 'http://localhost:3001' : process.env.SERVER_URL || 'http://localhost:3001';
+//const SERVER = process.env.SERVER_URL || 'http://localhost:3001';
+
+/*// Le Front regarde l'adresse actuelle affichée dans la barre de Chrome
+const SERVER = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:3001'           // Si vous testez sur votre PC
+    : 'https://adlil.net';      // Si le site est ouvert en ligne (branche test/main)
+    //yb ou bien est-ce 
+    // : 'https://dev-api.adlil.net';
+*/
+
+
 const NUMERO_WA = "213551105867";   // ← numéro WhatsApp du serveur, sans le « + »
 
 const PALETTE = ['#e53935', '#1e88e5', '#43a047', '#fb8c00', '#8e24aa', '#00acc1'];
