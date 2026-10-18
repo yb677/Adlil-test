@@ -342,3 +342,68 @@ function envoyerPosition() {
   }, () => etatPartage('تعذر تحديد الموقع'),
   { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 });
 }
+
+let monMarqueur = null;
+let monWatch = null;
+let monPremierPoint = true;
+
+function iconeMoi() {
+  return L.divIcon({
+    className: '',
+    html: '<svg width="34" height="34" viewBox="0 0 24 24" style="display:block">' +
+          '<path fill="#ea4335" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>',
+    iconSize: [34, 34],
+    iconAnchor: [17, 31],        // pointe du repère
+  });
+}
+
+function recadrerAvecMoi() {
+  const couches = Object.values(marqueurs).concat(monMarqueur ? [monMarqueur] : []);
+  if (couches.length === 1) carte.setView(monMarqueur.getLatLng(), 15);
+  else carte.fitBounds(L.featureGroup(couches).getBounds().pad(0.2));
+}
+
+function afficherMaPosition(actif) {
+  const etat = document.getElementById('etatMaPosition');
+  const casee = document.getElementById('caseMaPosition');
+
+  if (!actif) {
+    if (monWatch !== null) navigator.geolocation.clearWatch(monWatch);
+    monWatch = null;
+    if (monMarqueur && carte) carte.removeLayer(monMarqueur);
+    monMarqueur = null;
+    etat.textContent = '';
+    return;
+  }
+
+  if (!carte) { casee.checked = false; return; }
+  if (!navigator.geolocation) {
+    casee.checked = false;
+    alert('GPS غير متوفر');
+    return;
+  }
+
+  monPremierPoint = true;
+  etat.textContent = 'جارٍ تحديد الموقع...';
+
+  monWatch = navigator.geolocation.watchPosition(pos => {
+    const ll = [pos.coords.latitude, pos.coords.longitude];
+    if (!monMarqueur) {
+      monMarqueur = L.marker(ll, { icon: iconeMoi(), zIndexOffset: 1000, keyboard: false })
+        .addTo(carte)
+        .bindTooltip('موقعي', { permanent: true, direction: 'top', offset: [0, -30] });
+    } else {
+      monMarqueur.setLatLng(ll);
+    }
+    etat.textContent = '';
+    if (monPremierPoint) { monPremierPoint = false; recadrerAvecMoi(); }
+  }, err => {
+    if (err.code === 1) {                    // permission refusée
+      casee.checked = false;
+      afficherMaPosition(false);
+      alert('تم رفض إذن الموقع');
+    } else {
+      etat.textContent = 'تعذر تحديد الموقع';
+    }
+  }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 });
+}

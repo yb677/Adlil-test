@@ -1418,6 +1418,73 @@ async function refresh() {
     console.log("REFRESH");
 }
 
+// ===== Bouton « retour » du système =====
+let gardeArmee = false;
+let delaiSortie = null;
+
+// Une entrée d'historique « de garde » absorbe le premier appui sur retour
+function armerGarde() {
+  clearTimeout(delaiSortie);
+  delaiSortie = null;
+  if (gardeArmee) return;
+  history.pushState({ adlilGarde: true }, '');
+  gardeArmee = true;
+}
+
+// Première interaction, pour que le navigateur ne saute pas l'entrée de garde
+document.addEventListener('pointerdown', armerGarde, true);
+
+function toastRetour(texte) {
+  let t = document.getElementById('toastRetour');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toastRetour';
+    t.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);' +
+      'bottom:calc(30px + env(safe-area-inset-bottom,0px));background:rgba(0,0,0,.82);color:#fff;' +
+      'padding:10px 18px;border-radius:20px;font-size:14px;z-index:500;direction:rtl;' +
+      'text-align:center;max-width:85%;transition:opacity .3s;pointer-events:none;';
+    document.body.append(t);
+  }
+  t.textContent = texte;
+  t.style.opacity = '1';
+  clearTimeout(t._h);
+  t._h = setTimeout(() => { t.style.opacity = '0'; }, 2000);
+}
+
+// Ferme ce qui est ouvert, dans l'ordre. Renvoie true si quelque chose a été fermé.
+function fermerCouche() {
+  const menu = document.getElementById('sideMenu');
+  if (menu && menu.classList.contains('active')) { menu.classList.remove('active'); return true; }
+
+  const ins = document.getElementById('ecranIns');
+  if (ins && ins.style.display === 'flex') { insFermer(); return true; }
+
+  const emo = document.getElementById('panneauEmoji');
+  if (emo && emo.style.display === 'grid') { emo.style.display = 'none'; return true; }
+
+  return false;
+}
+
+window.addEventListener('popstate', () => {
+  gardeArmee = false;                         // l'entrée de garde vient d'être consommée
+  if (fermerCouche()) { armerGarde(); return; }
+
+  // rien à fermer : 1er appui = avertissement, le 2e (dans les 2 s) quitte l'application
+  toastRetour('للخروج من التطبيق، اضغط على زر الرجوع مرة ثانية');
+  clearTimeout(delaiSortie);
+  delaiSortie = setTimeout(armerGarde, 2000);  // délai écoulé : on réarme la protection
+});
+
+// Un appui sur la page ferme le menu
+document.addEventListener('click', e => {
+  const menu = document.getElementById('sideMenu');
+  if (!menu || !menu.classList.contains('active')) return;
+  if (menu.contains(e.target) || e.target.closest('#burgerBtn')) return;
+  e.preventDefault();
+  e.stopPropagation();
+  menu.classList.remove('active');
+}, true);
+
 loadDevFeed();
 
 setInterval(() => {
