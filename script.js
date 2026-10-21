@@ -1130,13 +1130,25 @@ async function loadDevFeed() {
     try {
 
         // 1. Récupérer uniquement les nouvelles publications
-        const response = await fetch(
+        /*const response = await fetch(
             `${SERVER}/dev/publications?clientId=${CLIENT_ID}`
         );
 
         const data = await response.json();
 
         if (!data.success) return;
+        */
+        const response = await fetch(
+            `${SERVER}/dev/publications?clientId=${CLIENT_ID}`,
+            { headers: idHeaders() }
+        );
+
+        const data = await response.json();
+
+        if (!data.success) return;
+        appliquerRole(data.role);
+        
+       
 
         console.log(
             "📦 PUBLICATIONS REÇUES :",

@@ -59,16 +59,6 @@ function retirerPJ() {
   document.getElementById('pjBarre').style.display = 'none';
 }
 
-const mdpEnregistre = () => localStorage.getItem('mdpAdmin');
-
-async function verifierMdp(mdp) {
-  const r = await fetch(SERVER + '/dev/admin-check', {
-    method: 'POST',
-    headers: { 'x-admin-password': mdp }
-  });
-  return r.status;
-}
-
 function montrerAdmin() {
   document.getElementById('zoneAdmin').style.display = 'block';
   ajusterChamp();
@@ -85,52 +75,28 @@ function viderAdmin() {
   ajusterChamp();
 }
 
-// Quitte le mode admin sur cet appareil
-function deconnecterAdmin() {
-  localStorage.removeItem('mdpAdmin');
-  viderAdmin();
-  document.getElementById('zoneAdmin').style.display = 'none';
-}
+const idHeaders = () => {
+  const id = localStorage.getItem('monId');
+  return id ? { 'x-user-id': id } : {};
+};
 
-async function ouvrirAdmin() {
+let monRole = 'utilisateur';
+const estAdmin = () => monRole === 'admin' || monRole === 'superadmin';
+
+// Affiche ou masque la barre de saisie selon le rôle (sans toucher à une saisie en cours)
+function appliquerRole(role) {
+  monRole = role || 'utilisateur';
+  localStorage.setItem('monRole', monRole);
   const zone = document.getElementById('zoneAdmin');
-  if (zone.style.display !== 'none') {                    // déjà admin : le logo permet de sortir
-    if (confirm('الخروج من وضع المشرف ؟')) deconnecterAdmin();
-    return;
-  }
-  try {
-    let mdp = mdpEnregistre();
-    let statut = mdp ? await verifierMdp(mdp) : 401;
-
-    if (statut === 401) {
-      localStorage.removeItem('mdpAdmin');
-      mdp = prompt('كلمة سر المشرف');
-      if (!mdp) return;
-      statut = await verifierMdp(mdp);
-      if (statut === 401) { alert('كلمة السر غير صحيحة'); return; }
-    }
-    if (statut === 429) { alert('محاولات كثيرة، أعد المحاولة لاحقا'); return; }
-    if (statut !== 200) { alert('تعذر الاتصال بالخادم'); return; }
-
-    localStorage.setItem('mdpAdmin', mdp);
-    montrerAdmin();
-    document.getElementById('champAdmin').focus();
-  } catch (e) { alert('تعذر الاتصال بالخادم'); }
-}
-
-// Au lancement : si cet appareil est déjà admin, la barre apparaît tout de suite
-async function initAdmin() {
-  const mdp = mdpEnregistre();
-  if (!mdp) return;
-  montrerAdmin();
-  try { if (await verifierMdp(mdp) === 401) deconnecterAdmin(); } catch (e) { /* hors ligne : on garde */ }
+  if (!zone) return;
+  const visible = zone.style.display !== 'none';
+  if (estAdmin() && !visible) montrerAdmin();
+  else if (!estAdmin() && visible) { viderAdmin(); zone.style.display = 'none'; }
 }
 
 async function envoyerAdmin() {
   const texte = document.getElementById('champAdmin').value.trim();
   if (!texte && !pjFichier) return;
-  const mdp = mdpEnregistre();
-  if (!mdp) { deconnecterAdmin(); return; }
 
   const btn = document.getElementById('btnEnvoiAdmin');
   btn.disabled = true;
@@ -138,10 +104,8 @@ async function envoyerAdmin() {
     if (pjFichier) {
       const fd = new FormData();
       fd.append('file', pjFichier);
-      const r = await fetch(SERVER + '/dev/file', {
-        method: 'POST', headers: { 'x-admin-password': mdp }, body: fd
-      });
-      if (r.status === 401) { deconnecterAdmin(); alert('كلمة السر لم تعد صالحة'); return; }
+      const r = await fetch(SERVER + '/dev/file', { method: 'POST', headers: idHeaders(), body: fd });
+      if (r.status === 403) { appliquerRole('utilisateur'); alert('ليست لديك صلاحية النشر'); return; }
       const d = await r.json();
       if (!d.success) throw new Error(d.error || 'file');
       retirerPJ();
@@ -149,10 +113,10 @@ async function envoyerAdmin() {
     if (texte) {
       const r = await fetch(SERVER + '/dev/text', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-password': mdp },
+        headers: { 'Content-Type': 'application/json', ...idHeaders() },
         body: JSON.stringify({ text: texte })
       });
-      if (r.status === 401) { deconnecterAdmin(); alert('كلمة السر لم تعد صالحة'); return; }
+      if (r.status === 403) { appliquerRole('utilisateur'); alert('ليست لديك صلاحية النشر'); return; }
       const d = await r.json();
       if (!d.success) throw new Error(d.error || 'text');
     }
@@ -165,4 +129,5 @@ async function envoyerAdmin() {
   }
 }
 
-initAdmin();
+localStorage.removeItem('mdpAdmin');                      // l'ancien mot de passe n'est plus utilisé
+appliquerRole(localStorage.getItem('monRole'));            // dernier rôle connu, même hors ligne
